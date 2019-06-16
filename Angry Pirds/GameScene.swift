@@ -11,11 +11,31 @@ import GameplayKit
 
 class GameScene: SKScene {
     
-    let pirdTexture = SKSpriteNode(imageNamed: "pird.png")
+    let pirdTexture = SKTexture(imageNamed: "pird.png")
+    var pirdsArr = Array<SKSpriteNode>()
 
     override func didMove(to view: SKView) {
-        self.pirdTexture.scale(to: CGSize(width: 130, height: 130))
-        self.addChild(self.pirdTexture)
+        
+        let circularPird = SKSpriteNode(texture: pirdTexture)
+        circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
+                                                                     circularPird.size.height / 2))
+        let texturedPird = SKSpriteNode(texture: self.pirdTexture)
+        texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
+                                                 size: CGSize(width: circularPird.size.width, height: circularPird.size.height))
+        
+        texturedPird.position = CGPoint(x: 0, y: 0)
+        texturedPird.scale(to: CGSize(width: 130, height: 130))
+        
+        createSceneContents()
+        
+        scene?.addChild(texturedPird)
+
+    }
+    
+    func createSceneContents() {
+        self.backgroundColor = .black
+        self.scaleMode = .aspectFit
+        self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
     }
     
     func touchDown(atPoint pos : CGPoint) {
@@ -24,31 +44,13 @@ class GameScene: SKScene {
     
     func touchMoved(toPoint pos : CGPoint) {
         
-        self.pirdTexture.position = pos
+        //self.pirdTexture.position = pos
     }
     
-//    func touchUp(atPoint pos : CGPoint) {
-//
-//    }
-    
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//
-//
-//    }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches {
-            self.touchMoved(toPoint: t.location(in: self))
-        }
+
     }
-    
-//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//
-//    }
-//
-//    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-//
-//    }
     
     
     override func update(_ currentTime: TimeInterval) {
