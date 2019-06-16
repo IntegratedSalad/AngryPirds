@@ -12,9 +12,11 @@ import GameplayKit
 class GameScene: SKScene {
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
-    var pirdsArr = Array<SKSpriteNode>()
+    var boxesArr = Array<SKSpriteNode>() // Set will be better?
 
     override func didMove(to view: SKView) {
+        
+        let pirdSize = 42
         
         let circularPird = SKSpriteNode(texture: pirdTexture)
         circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
@@ -24,11 +26,27 @@ class GameScene: SKScene {
                                                  size: CGSize(width: circularPird.size.width, height: circularPird.size.height))
         
         texturedPird.position = CGPoint(x: 0, y: 0)
-        texturedPird.scale(to: CGSize(width: 130, height: 130))
+        texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
+        
+        let path = CGMutablePath()
+        path.addArc(center: CGPoint.zero,
+                    radius: 45,
+                    startAngle: 0,
+                    endAngle: CGFloat.pi * 2,
+                    clockwise: true)
+        
+        let rangeBall = SKShapeNode(path: path)
+        rangeBall.lineWidth = 0.3
+        rangeBall.fillColor = .white
+        rangeBall.glowWidth = 0.1
+        
+        rangeBall.position = CGPoint(x: -210, y: -100)
+        
         
         createSceneContents()
-        
         scene?.addChild(texturedPird)
+        scene?.addChild(rangeBall)
+        
 
     }
     
@@ -39,12 +57,15 @@ class GameScene: SKScene {
     }
     
     func touchDown(atPoint pos : CGPoint) {
+        // if touching pird - move pird and lock it so that it doesn't rotate
+        
         
     }
     
     func touchMoved(toPoint pos : CGPoint) {
         
         //self.pirdTexture.position = pos
+        // During the touch moved, limit the movement of pird to the circle around him.
     }
     
     
