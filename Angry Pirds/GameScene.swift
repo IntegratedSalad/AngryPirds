@@ -13,6 +13,8 @@ class GameScene: SKScene {
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
     let boxTexture = SKTexture(imageNamed: "crate.png")
+    let resetText = SKLabelNode(fontNamed: "Courier")
+    let pirdSize = 32
     let ballRadius = 45
     var boxesArr = Array<SKSpriteNode>() // Set will be better?
     var pird = SKSpriteNode()
@@ -20,18 +22,16 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         
-        let pirdSize = 32
-        
         let circularPird = SKSpriteNode(texture: pirdTexture)
-        //circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
-        //                                                             circularPird.size.height / 2))
+        circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
+                                                                     circularPird.size.height / 2))
         
+        let texturedPird = SKSpriteNode(texture: self.pirdTexture)
+        texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
+                                                 size: CGSize(width: circularPird.size.width, height: circularPird.size.height))
         
-        //let texturedPird = SKSpriteNode(texture: self.pirdTexture)
-        //texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
-        //                                         size: CGSize(width: circularPird.size.width, height: circularPird.size.height))
-        
-        circularPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
+        texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
+        texturedPird.physicsBody?.isDynamic = false
         
         let path = CGMutablePath()
         path.addArc(center: CGPoint.zero,
@@ -51,14 +51,21 @@ class GameScene: SKScene {
         
         rangeBall.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
-        circularPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
+        texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
-        self.pird = circularPird
+        
+        resetText.text = "Reset"
+        resetText.fontSize = 14
+        resetText.fontColor = SKColor.white
+        resetText.position = CGPoint(x: 310, y: 175)
+        
+        self.pird = texturedPird
         self.ball = rangeBall
         
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
+        scene?.addChild(resetText)
         
 
     }
@@ -69,12 +76,10 @@ class GameScene: SKScene {
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
     }
     
+    var touchedPird: Bool = false
     func touchDown(atPoint pos : CGPoint) {
         
-        print(pos, "position of touch")
-        print(self.pird.position, "position of pird")
-        
-        if !self.pird.contains(pos)
+        if !self.pird.contains(pos) && pos.x > -180
         {
         
             let newBoxSize = 37
@@ -90,12 +95,23 @@ class GameScene: SKScene {
             texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
         
             scene?.addChild(texturedBox)
+            
         } else
         {
             // drag pird
-            
+            if self.pird.contains(pos)
+            {
+                touchedPird = true
+                
+            }
+        
+        
         }
         
+        if self.resetText.contains(pos)
+        {
+            reset()
+        }
         
     }
     
@@ -112,8 +128,13 @@ class GameScene: SKScene {
         
         // During the touch moved, limit the movement of pird to the circle around him.
         
-        if self.pird.contains(pos)
+        if touchedPird
         {
+            
+            //self.pird = texturedPird
+            
+            self.pird.position = pos
+            
             // Lock the touch to the pird.
             // Make pird follow touch pos
             
@@ -122,7 +143,12 @@ class GameScene: SKScene {
     }
     
     func touchUp(atPoint pos : CGPoint) {
-        self.pird.position = self.ball.position
+        //self.pird.position = self.ball.position
+        
+        if touchedPird{
+            self.pird.physicsBody?.isDynamic = true
+            touchedPird = false
+        }
     }
     
     
@@ -136,7 +162,19 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
-        
+
+    }
+    
+    func reset()
+    {
+        touchedPird = false
+        scene?.removeAllChildren()
+        self.pird.physicsBody?.isDynamic = false
+        self.pird.position = self.ball.position
+        scene?.addChild(self.pird)
+        scene?.addChild(self.ball)
+        scene?.addChild(self.resetText)
         
     }
+    
 }
