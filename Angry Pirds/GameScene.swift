@@ -14,10 +14,12 @@ class GameScene: SKScene {
     let pirdTexture = SKTexture(imageNamed: "pird.png")
     let boxTexture = SKTexture(imageNamed: "crate.png")
     var boxesArr = Array<SKSpriteNode>() // Set will be better?
+    var pird = SKSpriteNode()
+    var ball = SKShapeNode()
 
     override func didMove(to view: SKView) {
         
-        let pirdSize = 42
+        let pirdSize = 35
         
         let circularPird = SKSpriteNode(texture: pirdTexture)
         circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
@@ -41,12 +43,14 @@ class GameScene: SKScene {
         rangeBall.fillColor = .white
         rangeBall.glowWidth = 0.1
         
-        rangeBall.position = CGPoint(x: -210, y: -100)
+        rangeBall.position = CGPoint(x: -245, y: -100)
         
+        self.pird = texturedPird
+        self.ball = rangeBall
         
         createSceneContents()
-        scene?.addChild(texturedPird)
-        scene?.addChild(rangeBall)
+        scene?.addChild(self.pird)
+        scene?.addChild(self.ball)
         
 
     }
@@ -58,19 +62,32 @@ class GameScene: SKScene {
     }
     
     func touchDown(atPoint pos : CGPoint) {
-        let newBoxSize = 40
         
-        let circularNewBox = SKSpriteNode(texture: boxTexture)
-        circularNewBox.physicsBody = SKPhysicsBody(circleOfRadius: max(circularNewBox.size.width / 2,
-                                                                       circularNewBox.size.height / 2))
+        print(pos, "position of touch")
+        print(self.pird.position, "position of pird")
         
-        let texturedBox = SKSpriteNode(texture: boxTexture)
-        texturedBox.physicsBody = SKPhysicsBody(texture: boxTexture,
-                                                size: CGSize(width: circularNewBox.size.width, height: circularNewBox.size.height))
-        texturedBox.position = pos
-        texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
+        if !self.pird.contains(pos)
+        {
         
-        scene?.addChild(texturedBox)
+            print(self.pird.position)
+        
+            let newBoxSize = 40
+        
+            let circularNewBox = SKSpriteNode(texture: boxTexture)
+            circularNewBox.physicsBody = SKPhysicsBody(circleOfRadius: max(circularNewBox.size.width / 2,
+                                                                           circularNewBox.size.height / 2))
+        
+            let texturedBox = SKSpriteNode(texture: boxTexture)
+            texturedBox.physicsBody = SKPhysicsBody(texture: boxTexture,
+                                                    size: CGSize(width: circularNewBox.size.width, height: circularNewBox.size.height))
+            texturedBox.position = pos
+            texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
+        
+            scene?.addChild(texturedBox)
+        } else
+        {
+        print("dupa")
+        }
         
         
     }
