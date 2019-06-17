@@ -12,6 +12,7 @@ import GameplayKit
 class GameScene: SKScene {
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
+    let boxTexture = SKTexture(imageNamed: "crate.png")
     var boxesArr = Array<SKSpriteNode>() // Set will be better?
 
     override func didMove(to view: SKView) {
@@ -57,8 +58,27 @@ class GameScene: SKScene {
     }
     
     func touchDown(atPoint pos : CGPoint) {
+        let newBoxSize = 40
+        
+        let circularNewBox = SKSpriteNode(texture: boxTexture)
+        circularNewBox.physicsBody = SKPhysicsBody(circleOfRadius: max(circularNewBox.size.width / 2,
+                                                                       circularNewBox.size.height / 2))
+        
+        let texturedBox = SKSpriteNode(texture: boxTexture)
+        texturedBox.physicsBody = SKPhysicsBody(texture: boxTexture,
+                                                size: CGSize(width: circularNewBox.size.width, height: circularNewBox.size.height))
+        texturedBox.position = pos
+        texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
+        
+        scene?.addChild(texturedBox)
+        
+        
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         // if touching pird - move pird and lock it so that it doesn't rotate
         
+        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
         
     }
     
