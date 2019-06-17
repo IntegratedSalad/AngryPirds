@@ -38,6 +38,7 @@ class GameScene: SKScene {
         
         texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
         texturedPird.physicsBody?.isDynamic = false
+        texturedPird.physicsBody?.allowsRotation = true
         
         let path = CGMutablePath()
         path.addArc(center: CGPoint.zero,
@@ -127,6 +128,7 @@ class GameScene: SKScene {
             if self.pird.contains(pos)
             {
                 touchedPird = true
+                touchPoint = pos
                 self.pird.physicsBody?.isDynamic = false
                 
             }
@@ -157,7 +159,6 @@ class GameScene: SKScene {
         {
             
             self.pird.position = pos
-            touchPoint = pos
             self.pird.physicsBody?.isDynamic = false
             
             // Lock the touch to the pird.
@@ -165,13 +166,25 @@ class GameScene: SKScene {
         
         }
     }
-    
+
     func touchUp(atPoint pos : CGPoint) {
         //self.pird.position = self.ball.position
         
-        if touchedPird{
+        if touchedPird {
             self.pird.physicsBody?.isDynamic = true
             touchedPird = false
+            
+            //let distance = sqrt(pow(self.pird.position.x - touchPoint.x , 2) + pow( self.pird.position.y - touchPoint.y, 2))
+            
+            let dt: CGFloat = 0.05
+            let dx = touchPoint.x - self.pird.position.x // In that way, the direction is reversed
+            let dy = touchPoint.y - self.pird.position.y
+            //let dx = self.pird.position.x - touchPoint.x //  If we subtract touchPoint from pird position, the pird is going in direction of the                                                    finger
+            //let dy = self.pird.position.y - touchPoint.y
+            
+            // Potrzebujemy wektor, który jest odwrócony
+            
+            self.pird.physicsBody?.applyForce(CGVector(dx: dx/dt, dy: dy/dt)) // works?????!!!!!
         }
     }
     
@@ -188,7 +201,7 @@ class GameScene: SKScene {
         
         if touchedPird
         {
-            
+            // Velocity will be calculated as a distance from where the touch began to place where the touch ended - in opposite direction!
         }
 
     }
@@ -207,3 +220,8 @@ class GameScene: SKScene {
     }
     
 }
+
+//NEXT:
+// Collisions
+// Restrain pird to circle
+// Change force and gravity.
