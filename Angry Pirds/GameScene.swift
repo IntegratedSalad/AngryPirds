@@ -16,9 +16,15 @@ class GameScene: SKScene {
     let resetText = SKLabelNode(fontNamed: "Courier")
     let pirdSize = 32
     let ballRadius = 45
+    let choosedEntityToSelectBallRadius = 15
+    
     var boxesArr = Array<SKSpriteNode>() // Set will be better?
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
+    var selectBall = SKShapeNode()
+    var choosedEntityToSelect = SKTexture()
+    var touchPoint: CGPoint = CGPoint()
+    
 
     override func didMove(to view: SKView) {
         
@@ -45,14 +51,32 @@ class GameScene: SKScene {
         rangeBall.fillColor = .white
         rangeBall.glowWidth = 0.1
         
-        
         let rangeBallPositionX = -245
         let rangeBallPositionY = -100
         
         rangeBall.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
+        let secondPath = CGMutablePath()
+        secondPath.addArc(center: CGPoint.zero,
+                          radius: CGFloat(choosedEntityToSelectBallRadius),
+                          startAngle: 0,
+                          endAngle: CGFloat.pi * 2,
+                          clockwise: true)
+        
+        
+        let choosedEntityToSelectBall = SKShapeNode(path: secondPath)
+        choosedEntityToSelectBall.lineWidth = 0.3
+        choosedEntityToSelectBall.fillColor = .white
+        choosedEntityToSelectBall.glowWidth = 0.1
+        
+        let choosedEntityToSelectBallPositionX = -300
+        let choosedEntityToSelectBallPositionY = 150
+        
+        choosedEntityToSelectBall.position = CGPoint(x: choosedEntityToSelectBallPositionX, y: choosedEntityToSelectBallPositionY)
+        
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
+        choosedEntityToSelect = boxTexture
         
         resetText.text = "Reset"
         resetText.fontSize = 14
@@ -61,13 +85,14 @@ class GameScene: SKScene {
         
         self.pird = texturedPird
         self.ball = rangeBall
+        self.selectBall = choosedEntityToSelectBall
         
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(resetText)
-        
-
+        scene?.addChild(self.selectBall)
+    
     }
     
     func createSceneContents() {
@@ -102,9 +127,9 @@ class GameScene: SKScene {
             if self.pird.contains(pos)
             {
                 touchedPird = true
+                self.pird.physicsBody?.isDynamic = false
                 
             }
-        
         
         }
         
@@ -131,14 +156,13 @@ class GameScene: SKScene {
         if touchedPird
         {
             
-            //self.pird = texturedPird
-            
             self.pird.position = pos
+            touchPoint = pos
+            self.pird.physicsBody?.isDynamic = false
             
             // Lock the touch to the pird.
             // Make pird follow touch pos
-            
-            //self.pird.position = pos
+        
         }
     }
     
@@ -151,7 +175,6 @@ class GameScene: SKScene {
         }
     }
     
-    
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
     }
@@ -162,6 +185,11 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+        
+        if touchedPird
+        {
+            
+        }
 
     }
     
@@ -174,6 +202,7 @@ class GameScene: SKScene {
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
+        scene?.addChild(self.selectBall)
         
     }
     
