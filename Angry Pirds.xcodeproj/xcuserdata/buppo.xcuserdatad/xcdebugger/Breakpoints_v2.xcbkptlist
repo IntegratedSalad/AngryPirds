@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Angry Pirds/GameScene.swift"
-            timestampString = "582497780.563531"
+            timestampString = "582541659.026606"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "107"
-            endingLineNumber = "107"
+            startingLineNumber = "108"
+            endingLineNumber = "108"
             landmarkName = "touchDown(atPoint:)"
             landmarkType = "7">
          </BreakpointContent>

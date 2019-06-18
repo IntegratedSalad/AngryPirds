@@ -39,6 +39,8 @@ class GameScene: SKScene {
         texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
         texturedPird.physicsBody?.isDynamic = false
         texturedPird.physicsBody?.allowsRotation = true
+        texturedPird.physicsBody?.collisionBitMask = 0b0001
+        //texturedPird.physicsBody?.mass = 8
         
         let path = CGMutablePath()
         path.addArc(center: CGPoint.zero,
@@ -117,8 +119,14 @@ class GameScene: SKScene {
             let texturedBox = SKSpriteNode(texture: boxTexture)
             texturedBox.physicsBody = SKPhysicsBody(texture: boxTexture,
                                                     size: CGSize(width: circularNewBox.size.width, height: circularNewBox.size.height))
+            
+            texturedBox.physicsBody?.isDynamic = true
             texturedBox.position = pos
+            texturedBox.physicsBody?.categoryBitMask = 0b0001
             texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
+            texturedBox.physicsBody?.mass = 0.06
+            texturedBox.physicsBody?.restitution = 0
+            texturedBox.physicsBody?.friction = 0.05
         
             scene?.addChild(texturedBox)
             
