@@ -40,6 +40,8 @@ class GameScene: SKScene {
         texturedPird.physicsBody?.isDynamic = false
         texturedPird.physicsBody?.allowsRotation = true
         texturedPird.physicsBody?.collisionBitMask = 0b0001
+        
+        
         //texturedPird.physicsBody?.mass = 8
         
         let path = CGMutablePath()
@@ -89,6 +91,11 @@ class GameScene: SKScene {
         self.pird = texturedPird
         self.ball = rangeBall
         self.selectBall = choosedEntityToSelectBall
+        
+        let constraintRange = SKRange(upperLimit: CGFloat(ballRadius))
+        let constraintToBall = SKConstraint.distance(constraintRange, to: self.ball.position)
+        
+        self.pird.constraints = [ constraintToBall ] // limit movement of the pird to the ball range
         
         createSceneContents()
         scene?.addChild(self.pird)
@@ -158,13 +165,12 @@ class GameScene: SKScene {
     }
     
     func touchMoved(toPoint pos : CGPoint) {
-        
-        //let range = SKRange(value: 0, variance: CGFloat(ballRadius))
-        
+ 
         // During the touch moved, limit the movement of pird to the circle around him.
         
         if touchedPird
         {
+            
             
             self.pird.position = pos
             self.pird.physicsBody?.isDynamic = false
@@ -180,11 +186,12 @@ class GameScene: SKScene {
         
         if touchedPird {
             self.pird.physicsBody?.isDynamic = true
+            self.pird.constraints = []
             touchedPird = false
             
             //let distance = sqrt(pow(self.pird.position.x - touchPoint.x , 2) + pow( self.pird.position.y - touchPoint.y, 2))
             
-            let dt: CGFloat = 0.05
+            let dt: CGFloat = 0.04
             let dx = touchPoint.x - self.pird.position.x // In that way, the direction is reversed
             let dy = touchPoint.y - self.pird.position.y
             //let dx = self.pird.position.x - touchPoint.x //  If we subtract touchPoint from pird position, the pird is going in direction of the                                                    finger
@@ -220,6 +227,10 @@ class GameScene: SKScene {
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
         self.pird.position = self.ball.position
+        let constraintRange = SKRange(upperLimit: CGFloat(45))
+        let constraintToBall = SKConstraint.distance(constraintRange, to: self.ball.position)
+        
+        self.pird.constraints = [ constraintToBall ]
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
@@ -230,6 +241,9 @@ class GameScene: SKScene {
 }
 
 //NEXT:
-// Collisions
-// Restrain pird to circle
-// Change force and gravity.
+// Collisions V
+// Restrain pird to circle V
+// Change force and gravity. V
+// Make movable screen
+// Make camera that follows pird
+// Make enemies
