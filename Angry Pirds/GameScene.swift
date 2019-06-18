@@ -13,20 +13,23 @@ class GameScene: SKScene {
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
     let boxTexture = SKTexture(imageNamed: "crate.png")
+    let spurdoTexture = SKTexture(imageNamed: "spurdo.png")
     let resetText = SKLabelNode(fontNamed: "Courier")
     let grassTexture = SKTexture(imageNamed: "grass.png")
     let pirdSize = 32
     let ballRadius = 45
+    let choosedEntityToSelectBallPositionX = -300
+    let choosedEntityToSelectBallPositionY = 150
     let choosedEntityToSelectBallRadius = 15
-    
     let cameraNode = SKCameraNode()
     
+    var choosedEntityToSelectBall = SKShapeNode()
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
-    var choosedEntityToSelect = SKTexture()
+    var choosedEntityToSelect = SKSpriteNode()
+    var entitiesToSelect = [SKTexture]() // array of textures, that will be assigned to SKSpriteNodes
     var touchPoint: CGPoint = CGPoint()
-    
     let grassSize = (CGFloat(90), CGFloat(28))
     
     override func didMove(to view: SKView) {
@@ -43,6 +46,7 @@ class GameScene: SKScene {
         texturedPird.physicsBody?.isDynamic = false
         texturedPird.physicsBody?.allowsRotation = true
         texturedPird.physicsBody?.collisionBitMask = 0b0001
+        texturedPird.physicsBody?.restitution = 0.25
         //texturedPird.physicsBody?.mass = 8
         
         let path = CGMutablePath()
@@ -69,25 +73,23 @@ class GameScene: SKScene {
                           endAngle: CGFloat.pi * 2,
                           clockwise: true)
         
-        let choosedEntityToSelectBall = SKShapeNode(path: secondPath)
+        choosedEntityToSelectBall = SKShapeNode(path: secondPath)
         choosedEntityToSelectBall.lineWidth = 0.3
         choosedEntityToSelectBall.fillColor = .white
         choosedEntityToSelectBall.glowWidth = 0.1
-        
-        let choosedEntityToSelectBallPositionX = -300
-        let choosedEntityToSelectBallPositionY = 150
-        
+    
         choosedEntityToSelectBall.position = CGPoint(x: choosedEntityToSelectBallPositionX, y: choosedEntityToSelectBallPositionY)
         
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
-        choosedEntityToSelect = boxTexture
+        choosedEntityToSelect = SKSpriteNode(texture: boxTexture)
+        choosedEntityToSelect.scale(to: CGSize(width: 20, height: 20))
+        choosedEntityToSelect.position = choosedEntityToSelectBall.position
         
         resetText.text = "Reset"
         resetText.fontSize = 14
         resetText.fontColor = SKColor.white
         // 310, 175
-        
         
         self.pird = texturedPird
         self.ball = rangeBall
@@ -103,10 +105,11 @@ class GameScene: SKScene {
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
-        scene?.addChild(self.selectBall)
+        scene?.addChild(selectBall)
         scene?.addChild(resetText)
         scene?.addChild(cameraNode)
         scene?.camera = cameraNode
+        scene?.addChild(choosedEntityToSelect)
         putGrass(scene: scene)
         
         //scene?.addChild(rectangularGrass)
@@ -122,8 +125,7 @@ class GameScene: SKScene {
     var touchedPird: Bool = false
     func touchDown(atPoint pos : CGPoint) {
         
-        
-        if !self.pird.contains(pos) && pos.x > -180
+        if !self.pird.contains(pos) && pos.x > -180 && !pirdFlew
         {
         
             let newBoxSize = 37
@@ -177,29 +179,35 @@ class GameScene: SKScene {
  
         // During the touch moved, limit the movement of pird to the circle around him.
         
-        if touchedPird
+        if !pirdFlew
         {
+            if touchedPird
+            {
             
-            self.pird.position = pos
-            self.pird.physicsBody?.isDynamic = false
+                self.pird.position = pos
+                self.pird.physicsBody?.isDynamic = false
             
             // Lock the touch to the pird.
             // Make pird follow touch pos
         
+            }
+        } else {
+            reset()
         }
     }
-
+    
+    var pirdFlew: Bool = false
     func touchUp(atPoint pos : CGPoint) {
         //self.pird.position = self.ball.position
         
-        if touchedPird {
+        if touchedPird && !pirdFlew {
             self.pird.physicsBody?.isDynamic = true
             self.pird.constraints = []
-            touchedPird = false
+            //touchedPird = false
             
             //let distance = sqrt(pow(self.pird.position.x - touchPoint.x , 2) + pow( self.pird.position.y - touchPoint.y, 2))
             
-            let dt: CGFloat = 0.02
+            let dt: CGFloat = 0.04
             let dx = touchPoint.x - self.pird.position.x // In that way, the direction is reversed
             let dy = touchPoint.y - self.pird.position.y
             //let dx = self.pird.position.x - touchPoint.x //  If we subtract touchPoint from pird position, the pird is going in direction of the                                                    finger
@@ -207,7 +215,10 @@ class GameScene: SKScene {
             
             // Potrzebujemy wektor, który jest odwrócony
             
-            self.pird.physicsBody?.applyForce(CGVector(dx: dx/dt, dy: dy/dt)) // works?????!!!!!
+            //self.pird.physicsBody?.applyForce(CGVector(dx: dx/dt, dy: dy/dt)) // works?????!!!!!
+            self.pird.physicsBody?.velocity = CGVector(dx: dx/dt, dy: dy/dt)
+            pirdFlew = true
+            
         }
     }
     
@@ -227,13 +238,20 @@ class GameScene: SKScene {
             scene?.camera?.position.x = self.pird.position.x
             
         }
-        resetText.position = CGPoint(x: cameraNode.position.x + 310, y: cameraNode.position.y + 175)
+        // if it is resting for more than 2 seconds, reset
+        //print(self.pird.physicsBody?.velocity)
+        resetText.position = CGPoint(x: scene!.camera!.position.x + 310, y: 175)
+        choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
+        choosedEntityToSelect.position = choosedEntityToSelectBall.position
+        
+        //print(pirdFlew)
 
     }
     
     func reset()
     {
         touchedPird = false
+        pirdFlew = false
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
         self.pird.position = self.ball.position
@@ -244,8 +262,9 @@ class GameScene: SKScene {
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
-        scene?.addChild(self.selectBall)
+        scene?.addChild(choosedEntityToSelectBall)
         scene?.addChild(cameraNode)
+        scene?.addChild(choosedEntityToSelect)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
@@ -267,14 +286,20 @@ class GameScene: SKScene {
         }
     }
     
+    func showEntitiesToSelect()
+    {
+        
+    }
+    
 }
 
 //NEXT:
 // Collisions V
 // Restrain pird to circle V
 // Change force and gravity. V
-// Make movable screen if the pird goes beyond right edge.
-// Make camera that follows pird
-// Make spurdos
+// Make movable screen if the pird goes beyond right edge. V
+// Make camera that follows pird V
+// Make spurdos - menu from left to choose box or spurdo to spawn
+// Make moving controls in the right lower corner - "joystick to move screen"
 // Make optional reset boxes
 // In the upper side there will be a pird to choose, number of them, score etc.
