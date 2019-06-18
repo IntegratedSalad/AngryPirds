@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Angry Pirds/GameScene.swift"
-            timestampString = "582578280.432158"
+            timestampString = "582578542.264966"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
-            landmarkName = "touchDown(atPoint:)"
+            startingLineNumber = "130"
+            endingLineNumber = "130"
+            landmarkName = "didMove(to:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,12 +26,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Angry Pirds/GameScene.swift"
-            timestampString = "582578280.433035"
+            timestampString = "582578542.2658989"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "129"
-            endingLineNumber = "129"
-            landmarkName = "touchDown(atPoint:)"
+            startingLineNumber = "133"
+            endingLineNumber = "133"
+            landmarkName = "didMove(to:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

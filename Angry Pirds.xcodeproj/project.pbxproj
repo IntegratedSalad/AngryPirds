@@ -22,6 +22,7 @@
 		D8B8C3D422B6FFAC00AD7053 /* spurdo.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D322B6FFAC00AD7053 /* spurdo.png */; };
 		D8B8C3D622B7005900AD7053 /* plank.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D522B7005900AD7053 /* plank.png */; };
 		D8B8C3D822B8F0CB00AD7053 /* grass.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D722B8F0CB00AD7053 /* grass.png */; };
+		D8B8C3DA22B971ED00AD7053 /* dead spurdo.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D922B971ED00AD7053 /* dead spurdo.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		D8B8C3D322B6FFAC00AD7053 /* spurdo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = spurdo.png; path = ../../../../Desktop/spurdo.png; sourceTree = "<group>"; };
 		D8B8C3D522B7005900AD7053 /* plank.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = plank.png; path = ../../../../Desktop/plank.png; sourceTree = "<group>"; };
 		D8B8C3D722B8F0CB00AD7053 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
+		D8B8C3D922B971ED00AD7053 /* dead spurdo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dead spurdo.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				D8B8C35D22B576DE00AD7053 /* GameScene.sks */,
 				D8B8C35F22B576DE00AD7053 /* Actions.sks */,
 				D8B8C36122B576DE00AD7053 /* GameScene.swift */,
+				D8B8C3D922B971ED00AD7053 /* dead spurdo.png */,
 				D8B8C3D722B8F0CB00AD7053 /* grass.png */,
 				D8B8C3D322B6FFAC00AD7053 /* spurdo.png */,
 				D8B8C3D122B6FF4400AD7053 /* crate.png */,
@@ -255,6 +258,7 @@
 			files = (
 				D8B8C36722B576DE00AD7053 /* Main.storyboard in Resources */,
 				D8B8C3D422B6FFAC00AD7053 /* spurdo.png in Resources */,
+				D8B8C3DA22B971ED00AD7053 /* dead spurdo.png in Resources */,
 				D8B8C3D822B8F0CB00AD7053 /* grass.png in Resources */,
 				D8B8C3D222B6FF4400AD7053 /* crate.png in Resources */,
 				D8B8C35E22B576DE00AD7053 /* GameScene.sks in Resources */,

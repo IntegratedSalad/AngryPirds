@@ -9,12 +9,24 @@
 import SpriteKit
 import GameplayKit
 
+struct spurdo // don't know if it's needed
+{
+    
+    var isDead: Bool = false
+    var texture: String
+    {
+        return isDead ? "dead spurdo.png" : "spurdo.png"
+    }
+    // set texture depending on isDead
+}
+
 class GameScene: SKScene {
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
     let boxTexture = SKTexture(imageNamed: "crate.png")
-    let spurdoTexture = SKTexture(imageNamed: "spurdo.png")
     let resetText = SKLabelNode(fontNamed: "Courier")
+    let spurdoTexture = SKTexture(imageNamed: "spurdo.png")
+    let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
     let grassTexture = SKTexture(imageNamed: "grass.png")
     let pirdSize = 32
     let ballRadius = 45
@@ -31,6 +43,8 @@ class GameScene: SKScene {
     var entitiesToSelect = [SKTexture]() // array of textures, that will be assigned to SKSpriteNodes
     var touchPoint: CGPoint = CGPoint()
     let grassSize = (CGFloat(90), CGFloat(28))
+    
+
     
     override func didMove(to view: SKView) {
         
@@ -82,7 +96,10 @@ class GameScene: SKScene {
         
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
-        choosedEntityToSelect = SKSpriteNode(texture: boxTexture)
+        entitiesToSelect.append(boxTexture)
+        entitiesToSelect.append(spurdoTexture)
+        
+        choosedEntityToSelect = SKSpriteNode(texture: entitiesToSelect[0])
         choosedEntityToSelect.scale(to: CGSize(width: 20, height: 20))
         choosedEntityToSelect.position = choosedEntityToSelectBall.position
         
@@ -101,6 +118,7 @@ class GameScene: SKScene {
         self.pird.constraints = [ constraintToBall ] // limit movement of the pird to the ball range
         
         cameraNode.position = CGPoint(x: 0, y: 0)
+        
         
         createSceneContents()
         scene?.addChild(self.pird)
@@ -296,10 +314,17 @@ class GameScene: SKScene {
 //NEXT:
 // Collisions V
 // Restrain pird to circle V
-// Change force and gravity. V
 // Make movable screen if the pird goes beyond right edge. V
 // Make camera that follows pird V
 // Make spurdos - menu from left to choose box or spurdo to spawn
-// Make moving controls in the right lower corner - "joystick to move screen"
-// Make optional reset boxes
+// Make spurdos killable
+// Add planks
+// Change properties of the bodies.
+// Make moving controls in the right lower corner - "joystick" to move screen
+// If player moves joystick, measure the time after he leaves it - 3 seconds and camera returns to follow pird.
+// Make resetting boxes optional
 // In the upper side there will be a pird to choose, number of them, score etc.
+// Make different types of pirds - exploding ones, the ones that divide into three mid-air, heavier ones.
+// Make menu.
+
+// 4/14
