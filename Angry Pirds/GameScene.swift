@@ -19,6 +19,8 @@ class GameScene: SKScene {
     let ballRadius = 45
     let choosedEntityToSelectBallRadius = 15
     
+    let cameraNode = SKCameraNode()
+    
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
@@ -84,7 +86,8 @@ class GameScene: SKScene {
         resetText.text = "Reset"
         resetText.fontSize = 14
         resetText.fontColor = SKColor.white
-        resetText.position = CGPoint(x: 310, y: 175)
+        // 310, 175
+        
         
         self.pird = texturedPird
         self.ball = rangeBall
@@ -95,12 +98,17 @@ class GameScene: SKScene {
         
         self.pird.constraints = [ constraintToBall ] // limit movement of the pird to the ball range
         
+        cameraNode.position = CGPoint(x: 0, y: 0)
+        
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.selectBall)
         scene?.addChild(resetText)
+        scene?.addChild(cameraNode)
+        scene?.camera = cameraNode
         putGrass(scene: scene)
+        
         //scene?.addChild(rectangularGrass)
     
     }
@@ -113,6 +121,7 @@ class GameScene: SKScene {
     
     var touchedPird: Bool = false
     func touchDown(atPoint pos : CGPoint) {
+        
         
         if !self.pird.contains(pos) && pos.x > -180
         {
@@ -171,7 +180,6 @@ class GameScene: SKScene {
         if touchedPird
         {
             
-            
             self.pird.position = pos
             self.pird.physicsBody?.isDynamic = false
             
@@ -191,7 +199,7 @@ class GameScene: SKScene {
             
             //let distance = sqrt(pow(self.pird.position.x - touchPoint.x , 2) + pow( self.pird.position.y - touchPoint.y, 2))
             
-            let dt: CGFloat = 0.04
+            let dt: CGFloat = 0.02
             let dx = touchPoint.x - self.pird.position.x // In that way, the direction is reversed
             let dy = touchPoint.y - self.pird.position.y
             //let dx = self.pird.position.x - touchPoint.x //  If we subtract touchPoint from pird position, the pird is going in direction of the                                                    finger
@@ -214,10 +222,12 @@ class GameScene: SKScene {
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
-        if touchedPird
+        if self.pird.position.x > 280
         {
-            // Velocity will be calculated as a distance from where the touch began to place where the touch ended - in opposite direction!
+            scene?.camera?.position.x = self.pird.position.x
+            
         }
+        resetText.position = CGPoint(x: cameraNode.position.x + 310, y: cameraNode.position.y + 175)
 
     }
     
@@ -235,6 +245,8 @@ class GameScene: SKScene {
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
         scene?.addChild(self.selectBall)
+        scene?.addChild(cameraNode)
+        cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
     }
@@ -242,7 +254,7 @@ class GameScene: SKScene {
     func putGrass (scene: SKScene?)
     {
         var posX: CGFloat = CGFloat(-288)
-        for _ in 0...7
+        for _ in 0...24
         {
             let rectangularGrass = SKSpriteNode(texture: grassTexture)
             rectangularGrass.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: rectangularGrass.size.width, height:                                                                                                  rectangularGrass.size.height))
@@ -252,7 +264,6 @@ class GameScene: SKScene {
             rectangularGrass.position = CGPoint(x: posX, y: -186)
             posX += grassSize.0
             scene?.addChild(rectangularGrass)
-            
         }
     }
     
@@ -262,7 +273,8 @@ class GameScene: SKScene {
 // Collisions V
 // Restrain pird to circle V
 // Change force and gravity. V
-// Make movable screen
+// Make movable screen if the pird goes beyond right edge.
 // Make camera that follows pird
 // Make spurdos
+// Make optional reset boxes
 // In the upper side there will be a pird to choose, number of them, score etc.
