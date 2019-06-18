@@ -14,18 +14,19 @@ class GameScene: SKScene {
     let pirdTexture = SKTexture(imageNamed: "pird.png")
     let boxTexture = SKTexture(imageNamed: "crate.png")
     let resetText = SKLabelNode(fontNamed: "Courier")
+    let grassTexture = SKTexture(imageNamed: "grass.png")
     let pirdSize = 32
     let ballRadius = 45
     let choosedEntityToSelectBallRadius = 15
     
-    var boxesArr = Array<SKSpriteNode>() // Set will be better?
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
     var choosedEntityToSelect = SKTexture()
     var touchPoint: CGPoint = CGPoint()
     
-
+    let grassSize = (CGFloat(90), CGFloat(28))
+    
     override func didMove(to view: SKView) {
         
         let circularPird = SKSpriteNode(texture: pirdTexture)
@@ -40,8 +41,6 @@ class GameScene: SKScene {
         texturedPird.physicsBody?.isDynamic = false
         texturedPird.physicsBody?.allowsRotation = true
         texturedPird.physicsBody?.collisionBitMask = 0b0001
-        
-        
         //texturedPird.physicsBody?.mass = 8
         
         let path = CGMutablePath()
@@ -67,7 +66,6 @@ class GameScene: SKScene {
                           startAngle: 0,
                           endAngle: CGFloat.pi * 2,
                           clockwise: true)
-        
         
         let choosedEntityToSelectBall = SKShapeNode(path: secondPath)
         choosedEntityToSelectBall.lineWidth = 0.3
@@ -100,15 +98,17 @@ class GameScene: SKScene {
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
-        scene?.addChild(resetText)
         scene?.addChild(self.selectBall)
+        scene?.addChild(resetText)
+        putGrass(scene: scene)
+        //scene?.addChild(rectangularGrass)
     
     }
     
     func createSceneContents() {
         self.backgroundColor = .black
         self.scaleMode = .aspectFit
-        self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
+        //self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
     }
     
     var touchedPird: Bool = false
@@ -235,7 +235,25 @@ class GameScene: SKScene {
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
         scene?.addChild(self.selectBall)
+        putGrass(scene: scene)
         
+    }
+    
+    func putGrass (scene: SKScene?)
+    {
+        var posX: CGFloat = CGFloat(-288)
+        for _ in 0...7
+        {
+            let rectangularGrass = SKSpriteNode(texture: grassTexture)
+            rectangularGrass.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: rectangularGrass.size.width, height:                                                                                                  rectangularGrass.size.height))
+            rectangularGrass.physicsBody?.isDynamic = false
+            
+            rectangularGrass.scale(to: CGSize(width: grassSize.0, height: grassSize.1))
+            rectangularGrass.position = CGPoint(x: posX, y: -186)
+            posX += grassSize.0
+            scene?.addChild(rectangularGrass)
+            
+        }
     }
     
 }
@@ -246,4 +264,5 @@ class GameScene: SKScene {
 // Change force and gravity. V
 // Make movable screen
 // Make camera that follows pird
-// Make enemies
+// Make spurdos
+// In the upper side there will be a pird to choose, number of them, score etc.
