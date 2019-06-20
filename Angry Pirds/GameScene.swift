@@ -9,15 +9,36 @@
 import SpriteKit
 import GameplayKit
 
-struct spurdo // don't know if it's needed
+struct entityToSelect // holds data for icon and for entity
 {
+    let id = UUID()
+    let sizeOfIcon: Int = 20
+    let isDynamic = true
+    var isDestroyed:  Bool = false
+    var textureInUse: String
+    let textureAlive: String
+    let textureDead: String
+    var sizeOfEntity = 0
+    var mass: CGFloat = 10
+    var restitution: CGFloat = 0.1
+    var friction: CGFloat = 0.05
     
-    var isDead: Bool = false
-    var texture: String
+    init(textureAlive: String, textureDead: String)
     {
-        return isDead ? "dead spurdo.png" : "spurdo.png"
+        self.textureAlive = textureAlive
+        self.textureInUse = textureAlive
+        self.textureDead = textureDead
+
     }
-    // set texture depending on isDead
+
+    mutating func changeTexture()
+    {
+        if isDestroyed
+        {
+            self.textureInUse = textureDead
+        }
+    }
+    
 }
 
 class GameScene: SKScene {
@@ -34,18 +55,16 @@ class GameScene: SKScene {
     let choosedEntityToSelectBallPositionY = 150
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
+    var entitiesToSelect = Array<entityToSelect>()
     
     var choosedEntityToSelectBall = SKShapeNode()
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
-    var choosedEntityToSelect = SKSpriteNode()
-    var entitiesToSelect = [SKTexture]() // array of textures, that will be assigned to SKSpriteNodes
+    var entityToSelectIcon = SKSpriteNode()
     var touchPoint: CGPoint = CGPoint()
     let grassSize = (CGFloat(90), CGFloat(28))
-    
 
-    
     override func didMove(to view: SKView) {
         
         let circularPird = SKSpriteNode(texture: pirdTexture)
@@ -90,18 +109,12 @@ class GameScene: SKScene {
         choosedEntityToSelectBall = SKShapeNode(path: secondPath)
         choosedEntityToSelectBall.lineWidth = 0.3
         choosedEntityToSelectBall.fillColor = .white
-        choosedEntityToSelectBall.glowWidth = 0.1
+        choosedEntityToSelectBall.strokeColor = .orange
+        choosedEntityToSelectBall.glowWidth = 1
     
         choosedEntityToSelectBall.position = CGPoint(x: choosedEntityToSelectBallPositionX, y: choosedEntityToSelectBallPositionY)
         
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
-        
-        entitiesToSelect.append(boxTexture)
-        entitiesToSelect.append(spurdoTexture)
-        
-        choosedEntityToSelect = SKSpriteNode(texture: entitiesToSelect[0])
-        choosedEntityToSelect.scale(to: CGSize(width: 20, height: 20))
-        choosedEntityToSelect.position = choosedEntityToSelectBall.position
         
         resetText.text = "Reset"
         resetText.fontSize = 14
@@ -119,15 +132,22 @@ class GameScene: SKScene {
         
         cameraNode.position = CGPoint(x: 0, y: 0)
         
+        let crateIcon = entityToSelect(textureAlive: "crate.png", textureDead: "")
+        let spurdoIcon = entityToSelect(textureAlive: "spurdo.png", textureDead: "dead spurdo.png")
+        
+        entitiesToSelect = [crateIcon, spurdoIcon]
+        self.entityToSelectIcon = SKSpriteNode(imageNamed: entitiesToSelect[0].textureInUse)
+        self.entityToSelectIcon.position = choosedEntityToSelectBall.position
+        self.entityToSelectIcon.scale(to: CGSize(width: entitiesToSelect[0].sizeOfIcon, height: entitiesToSelect[0].sizeOfIcon))
         
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
+        scene?.addChild(self.entityToSelectIcon)
         scene?.addChild(selectBall)
         scene?.addChild(resetText)
         scene?.addChild(cameraNode)
         scene?.camera = cameraNode
-        scene?.addChild(choosedEntityToSelect)
         putGrass(scene: scene)
         
         //scene?.addChild(rectangularGrass)
@@ -141,11 +161,18 @@ class GameScene: SKScene {
     }
     
     var touchedPird: Bool = false
+    var choosingActive: Bool = false
     func touchDown(atPoint pos : CGPoint) {
+        
+        if self.entityToSelectIcon.contains(pos)
+        {
+            showEntitiesToSelect()
+            
+        }
         
         if !self.pird.contains(pos) && pos.x > -180 && !pirdFlew
         {
-        
+            
             let newBoxSize = 37
         
             let circularNewBox = SKSpriteNode(texture: boxTexture)
@@ -257,12 +284,11 @@ class GameScene: SKScene {
             
         }
         // if it is resting for more than 2 seconds, reset
-        //print(self.pird.physicsBody?.velocity)
         resetText.position = CGPoint(x: scene!.camera!.position.x + 310, y: 175)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
-        choosedEntityToSelect.position = choosedEntityToSelectBall.position
         
-        //print(pirdFlew)
+
+        checkSpurdos()
 
     }
     
@@ -280,9 +306,9 @@ class GameScene: SKScene {
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
+        scene?.addChild(self.entityToSelectIcon)
         scene?.addChild(choosedEntityToSelectBall)
         scene?.addChild(cameraNode)
-        scene?.addChild(choosedEntityToSelect)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
@@ -291,7 +317,7 @@ class GameScene: SKScene {
     func putGrass (scene: SKScene?)
     {
         var posX: CGFloat = CGFloat(-288)
-        for _ in 0...24
+        for _ in 0...30
         {
             let rectangularGrass = SKSpriteNode(texture: grassTexture)
             rectangularGrass.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: rectangularGrass.size.width, height:                                                                                                  rectangularGrass.size.height))
@@ -304,7 +330,59 @@ class GameScene: SKScene {
         }
     }
     
+    var switchCounter: Int = 0
     func showEntitiesToSelect()
+    {
+        var xPos = choosedEntityToSelectBallPositionX + 40
+        
+        if switchCounter % 2 == 0
+        {
+            for entity in entitiesToSelect
+            {
+                let path = CGMutablePath()
+                path.addArc(center: CGPoint.zero,
+                            radius: CGFloat(choosedEntityToSelectBallRadius),
+                            startAngle: 0,
+                            endAngle: CGFloat.pi * 2,
+                            clockwise: true)
+                let ball = SKShapeNode(path: path)
+                ball.lineWidth = 0.3
+                ball.fillColor = .white
+                ball.glowWidth = 0.1
+                ball.position = CGPoint(x: xPos, y: choosedEntityToSelectBallPositionY)
+                let iconToSelect = SKSpriteNode(imageNamed: entity.textureInUse)
+                iconToSelect.position = CGPoint(x: xPos, y: choosedEntityToSelectBallPositionY)
+                iconToSelect.scale(to: CGSize(width: entity.sizeOfIcon, height: entity.sizeOfIcon))
+                iconToSelect.name = "selectentity"
+                ball.name = "selectball"
+                
+                xPos += 40
+                scene?.addChild(ball)
+                scene?.addChild(iconToSelect)
+            }
+        } else {
+            hideEntitiesToSelect()
+        }
+        switchCounter += 1
+    }
+    func hideEntitiesToSelect()
+        
+    {
+        for _ in entitiesToSelect
+        {
+            if let child = self.childNode(withName: "selectball") as? SKShapeNode
+            {
+                child.removeFromParent()
+            }
+            
+            if let anotherchild = self.childNode(withName: "selectentity") as? SKSpriteNode
+            {
+                anotherchild.removeFromParent()
+            }
+        }
+    }
+    
+    func checkSpurdos()
     {
         
     }
