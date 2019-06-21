@@ -9,55 +9,21 @@
 import SpriteKit
 import GameplayKit
 
-struct entitytoPlace
-{
-    var mass: CGFloat = 10
-    var restitution: CGFloat = 0.1
-    var friction: CGFloat = 0.05
-    var size: CGSize = CGSize(width: 0, height: 0)
-    var pos: CGPoint = CGPoint(x: 0, y: 0)
-    
-    init() // empty init
-    {
-        
-    }
-    
-    init(pos: CGPoint, size: CGSize) // end this will further on be used to create SKSpriteNode
-    {
-        self.size = size
-        self.pos = pos
-    }
-}
-
 struct Entity // holds data for icon and for entity
 {
     let id = UUID()
-    let size: CGSize = CGSize(width: 20, height: 20)
     let textureAlive: SKTexture
     let textureDead: SKTexture
     let textureInUse: SKTexture
+    let width: CGFloat
+    let height: CGFloat
+    
+    var mass: CGFloat
+    var restitution: CGFloat
+    var friction: CGFloat
+    var angularDamping: CGFloat
+    
 }
-
-//struct boo {
-//    let id = UUID()
-//    let name: String
-//}
-//
-//func foo() {
-//
-//    let blah: [boo] = [
-//        boo(name: "misiaczek"),
-//        boo(name: "prosiaczek")
-//    ]
-//
-//    var wybrana: boo?
-//
-//    wybrana = blah.first
-//
-//    wybrana = blah.last
-//
-//    wybrana = nil
-//}
 
 
 class GameScene: SKScene {
@@ -75,16 +41,25 @@ class GameScene: SKScene {
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
     
-    var choiceBalls = [SKShapeNode]()
-    var choiceIcons = [SKSpriteNode]()
-    
     var choiceEntities: [Entity] = [
         Entity(textureAlive: SKTexture(imageNamed: "crate"),
                textureDead: SKTexture(imageNamed: "crate"),
-               textureInUse: SKTexture(imageNamed: "crate")),
+               textureInUse: SKTexture(imageNamed: "crate"),
+               width: 33,
+               height: 33,
+               mass: 0.005,
+               restitution: 0,
+               friction: 0.6,
+               angularDamping: 1),
         Entity(textureAlive: SKTexture(imageNamed: "spurdo"),
                textureDead: SKTexture(imageNamed: "spurdo"),
-               textureInUse: SKTexture(imageNamed: "spurdo"))
+               textureInUse: SKTexture(imageNamed: "spurdo"),
+               width: 21,
+               height: 15,
+               mass: 0.03,
+               restitution: 0,
+               friction: 0.4,
+               angularDamping: 0.15)
     ]
     
     fileprivate lazy var currentEntity = self.choiceEntities[0]
@@ -192,25 +167,25 @@ class GameScene: SKScene {
     var switchCounter: Int = 0
     
     private func addNewObject(atPoint pos: CGPoint) {
-        let newBoxSize = 37
-       
+        
         let currentEntity = self.currentEntity
         
         let texture = currentEntity.textureInUse
 
-        let texturedBox = SKSpriteNode(texture: texture)
-        texturedBox.physicsBody = SKPhysicsBody(texture: texture,
-                                                size: CGSize(width: texturedBox.size.width, height: texturedBox.size.height))
+        let newObject = SKSpriteNode(texture: texture)
+        newObject.physicsBody = SKPhysicsBody(texture: texture,
+                                                size: CGSize(width: newObject.size.width, height: newObject.size.height))
         
-        texturedBox.physicsBody?.isDynamic = true
-        texturedBox.position = pos
-        texturedBox.physicsBody?.categoryBitMask = 0b0001
-        texturedBox.scale(to: CGSize(width: newBoxSize, height: newBoxSize))
-        texturedBox.physicsBody?.mass = 0.06
-        texturedBox.physicsBody?.restitution = 0
-        texturedBox.physicsBody?.friction = 0.05
+        newObject.physicsBody?.isDynamic = true
+        newObject.position = pos
+        newObject.physicsBody?.categoryBitMask = 0b0001
+        newObject.scale(to: CGSize(width: currentEntity.width, height: currentEntity.height))
+        newObject.physicsBody?.mass = currentEntity.mass
+        newObject.physicsBody?.restitution = currentEntity.restitution
+        newObject.physicsBody?.friction = currentEntity.friction
+        newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
-        scene?.addChild(texturedBox)
+        scene?.addChild(newObject)
     }
     
     private func showCurrentChoice() {
@@ -221,7 +196,6 @@ class GameScene: SKScene {
         let ballSize = self.choosedEntityToSelectBall.frame.size
         entityNode.size = CGSize(width: ballSize.width/CGFloat(2.0), height: ballSize.height/CGFloat(2.0))
         self.choosedEntityToSelectBall.addChild(entityNode)
-
     }
     
     func touchDown(atPoint pos : CGPoint) {
@@ -240,18 +214,16 @@ class GameScene: SKScene {
         print(self.touchedIcon)
         
         let nodes = self.nodes(at: pos)
-        print("selected nodes: \(nodes)")
         
         for node in nodes {
-            guard let nodeName = node.name else {
+            guard let nodeName = node.name else { // only let nodeName, when touching on selection sprites.
                 continue
             }
             
             for entity in self.choiceEntities {
-                if entity.id.uuidString == nodeName {
+                if entity.id.uuidString == nodeName { // if touched entity has nam
                     self.currentEntity = entity
-                    
-                    print("new king \(entity.textureInUse)")
+                
                     
                     self.showCurrentChoice()
                     
@@ -357,19 +329,6 @@ class GameScene: SKScene {
         resetText.position = CGPoint(x: scene!.camera!.position.x + 310, y: 175)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
         
-        if touchedIcon
-        {
-            
-            
-            // if !touchedIcon
-            //{
-            //   scene?.addChild(ball)
-            //   scene?.addChild(icon)
-            //}
-            // }
-        }
-        
-
         checkSpurdos()
 
     }
@@ -412,11 +371,8 @@ class GameScene: SKScene {
         }
     }
     
-    var switchcounter: Int = 0
     let sizeOf: Int = 20
-    
     var menuToSelect: SKNode?
-    
     func hideEntitiesToSelect() {
         self.menuToSelect?.removeFromParent()
         self.menuToSelect = nil
@@ -461,24 +417,7 @@ class GameScene: SKScene {
             self.addChild(menu)
         }
     }
-//
-//    func hideEntitiesToSelect()
-//
-//    {
-//        for _ in entitiesToSelect
-//        {
-//            if let child = self.childNode(withName: "selectball") as? SKShapeNode
-//            {
-//                child.removeFromParent()
-//            }
-//
-//            if let anotherchild = self.childNode(withName: "selectentity") as? SKSpriteNode
-//            {
-//                anotherchild.removeFromParent()
-//            }
-//        }
-//    }
-    
+
     func checkSpurdos()
     {
         
@@ -491,7 +430,7 @@ class GameScene: SKScene {
 // Restrain pird to circle V
 // Make movable screen if the pird goes beyond right edge. V
 // Make camera that follows pird V
-// Make spurdos - menu from left to choose box or spurdo to spawn
+// Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different spurdos.
 // Make spurdos killable
 // Add planks
 // Change properties of the bodies.
