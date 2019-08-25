@@ -28,7 +28,7 @@ struct Entity
 }
 
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
 
@@ -80,6 +80,8 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         
+        self.physicsWorld.contactDelegate = self // assigning contact delegate
+        
         //let circularPird = SKSpriteNode(texture: pirdTexture)
         //circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
         //                                                            circularPird.size.height / 2))
@@ -91,8 +93,9 @@ class GameScene: SKScene {
         texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
         texturedPird.physicsBody?.isDynamic = false
         texturedPird.physicsBody?.allowsRotation = true
-        texturedPird.physicsBody?.collisionBitMask = 0b0001
+        texturedPird.physicsBody?.contactTestBitMask = 0b0001
         texturedPird.physicsBody?.restitution = 0.25
+        //texturedPird.physicsBody?.categoryBitMask = 0b0001
         //texturedPird.physicsBody?.mass = 8
         
         let path = CGMutablePath()
@@ -192,12 +195,13 @@ class GameScene: SKScene {
         
         newObject.physicsBody?.isDynamic = true
         newObject.position = pos
-        newObject.physicsBody?.categoryBitMask = 0b0001
+        //newObject.physicsBody?.categoryBitMask = 0b0001
         newObject.scale(to: CGSize(width: currentEntity.width, height: currentEntity.height))
         newObject.physicsBody?.mass = currentEntity.mass
         newObject.physicsBody?.restitution = currentEntity.restitution
         newObject.physicsBody?.friction = currentEntity.friction
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
+        newObject.physicsBody?.contactTestBitMask = 0b0001
         
         newObject.name = currentEntity.nameOf
         scene?.addChild(newObject)
@@ -428,10 +432,20 @@ class GameScene: SKScene {
             self.addChild(menu)
         }
     }
-
+    
+    
     func didBegin(_ contact: SKPhysicsContact)
     {
-        print(contact.bodyA.node!.name!)
+        let firstBody = contact.bodyA
+        let secondBody = contact.bodyB
+        
+        if firstBody.node!.name == "pird" && secondBody.node!.name == "spurdo"
+        {
+            /* We delete old and make new node */
+
+            print(secondBody)
+        }
+        
     }
     
 }
