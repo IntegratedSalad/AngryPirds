@@ -9,14 +9,16 @@
 import SpriteKit
 import GameplayKit
 
-struct Entity // holds data for icon and for entity
+struct Entity
 {
     let id = UUID()
+    let nameOf: String
     let textureAlive: SKTexture
     let textureDead: SKTexture
     let textureInUse: SKTexture
     let width: CGFloat
     let height: CGFloat
+    let physicsBodyType: String
     
     var mass: CGFloat
     var restitution: CGFloat
@@ -42,20 +44,24 @@ class GameScene: SKScene {
     let cameraNode = SKCameraNode()
     
     var choiceEntities: [Entity] = [
-        Entity(textureAlive: SKTexture(imageNamed: "crate"),
+        Entity(nameOf: "crate",
+               textureAlive: SKTexture(imageNamed: "crate"),
                textureDead: SKTexture(imageNamed: "crate"),
                textureInUse: SKTexture(imageNamed: "crate"),
                width: 33,
                height: 33,
+               physicsBodyType: "rectangular",
                mass: 0.005,
                restitution: 0,
                friction: 0.6,
                angularDamping: 1),
-        Entity(textureAlive: SKTexture(imageNamed: "spurdo"),
+        Entity(nameOf: "spurdo",
+               textureAlive: SKTexture(imageNamed: "spurdo"),
                textureDead: SKTexture(imageNamed: "spurdo"),
                textureInUse: SKTexture(imageNamed: "spurdo"),
                width: 21,
                height: 15,
+               physicsBodyType: "circular",
                mass: 0.03,
                restitution: 0,
                friction: 0.4,
@@ -74,13 +80,13 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         
-        let circularPird = SKSpriteNode(texture: pirdTexture)
-        circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
-                                                                     circularPird.size.height / 2))
+        //let circularPird = SKSpriteNode(texture: pirdTexture)
+        //circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
+        //                                                            circularPird.size.height / 2))
         
         let texturedPird = SKSpriteNode(texture: self.pirdTexture)
         texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
-                                                 size: CGSize(width: circularPird.size.width, height: circularPird.size.height))
+                                                 size: CGSize(width: texturedPird.size.width, height: texturedPird.size.height))
         
         texturedPird.scale(to: CGSize(width: pirdSize, height: pirdSize))
         texturedPird.physicsBody?.isDynamic = false
@@ -129,6 +135,7 @@ class GameScene: SKScene {
         // 310, 175
 
         self.pird = texturedPird
+        self.pird.name = "pird"
         self.ball = rangeBall
         self.selectBall = choosedEntityToSelectBall
 
@@ -171,10 +178,17 @@ class GameScene: SKScene {
         let currentEntity = self.currentEntity
         
         let texture = currentEntity.textureInUse
-
         let newObject = SKSpriteNode(texture: texture)
-        newObject.physicsBody = SKPhysicsBody(texture: texture,
-                                                size: CGSize(width: newObject.size.width, height: newObject.size.height))
+        
+        if currentEntity.physicsBodyType == "circular"
+        {
+
+            newObject.physicsBody = SKPhysicsBody(circleOfRadius: max(newObject.size.width / 2, newObject.size.height / 2))
+            
+        } else { // be it texture physicsBody type
+            newObject.physicsBody = SKPhysicsBody(texture: texture, size: CGSize(width: newObject.size.width,
+                                                                                 height: newObject.size.height))
+        }
         
         newObject.physicsBody?.isDynamic = true
         newObject.position = pos
@@ -185,6 +199,7 @@ class GameScene: SKScene {
         newObject.physicsBody?.friction = currentEntity.friction
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
+        newObject.name = currentEntity.nameOf
         scene?.addChild(newObject)
     }
     
@@ -211,8 +226,6 @@ class GameScene: SKScene {
             self.hideEntitiesToSelect()
         }
         
-        print(self.touchedIcon)
-        
         let nodes = self.nodes(at: pos)
         
         for node in nodes {
@@ -221,9 +234,8 @@ class GameScene: SKScene {
             }
             
             for entity in self.choiceEntities {
-                if entity.id.uuidString == nodeName { // if touched entity has nam
+                if entity.id.uuidString == nodeName { // if touched entity has name
                     self.currentEntity = entity
-                
                     
                     self.showCurrentChoice()
                     
@@ -328,8 +340,7 @@ class GameScene: SKScene {
         // if it is resting for more than 2 seconds, reset
         resetText.position = CGPoint(x: scene!.camera!.position.x + 310, y: 175)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
-        
-        checkSpurdos()
+
 
     }
     
@@ -418,9 +429,9 @@ class GameScene: SKScene {
         }
     }
 
-    func checkSpurdos()
+    func didBegin(_ contact: SKPhysicsContact)
     {
-        
+        print(contact.bodyA.node!.name!)
     }
     
 }
@@ -430,8 +441,9 @@ class GameScene: SKScene {
 // Restrain pird to circle V
 // Make movable screen if the pird goes beyond right edge. V
 // Make camera that follows pird V
-// Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different spurdos.
-// Make spurdos killable
+// Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different pirds.
+// Change the physcics shape of spurdo's body V
+// Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it.
 // Add planks
 // Change properties of the bodies.
 // Make moving controls in the right lower corner - "joystick" to move screen
@@ -441,4 +453,4 @@ class GameScene: SKScene {
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air, heavier ones.
 // Make menu.
 
-// 4/14
+// 5/14
