@@ -27,7 +27,6 @@ struct Entity
     
 }
 
-
 class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
@@ -187,10 +186,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         {
 
             newObject.physicsBody = SKPhysicsBody(circleOfRadius: max(newObject.size.width / 2, newObject.size.height / 2))
+            newObject.physicsBody?.contactTestBitMask = 0b0001
             
         } else { // be it texture physicsBody type
             newObject.physicsBody = SKPhysicsBody(texture: texture, size: CGSize(width: newObject.size.width,
                                                                                  height: newObject.size.height))
+            newObject.physicsBody?.contactTestBitMask = 0b0001 >> 1
         }
         
         newObject.physicsBody?.isDynamic = true
@@ -201,7 +202,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.restitution = currentEntity.restitution
         newObject.physicsBody?.friction = currentEntity.friction
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
-        newObject.physicsBody?.contactTestBitMask = 0b0001
         
         newObject.name = currentEntity.nameOf
         scene?.addChild(newObject)
@@ -439,12 +439,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let firstBody = contact.bodyA
         let secondBody = contact.bodyB
         
-        if firstBody.node!.name == "pird" && secondBody.node!.name == "spurdo"
+        if firstBody.node?.name == "pird" && secondBody.node?.name == "spurdo"
         {
             /* We delete old and make new node */
 
-            print(secondBody)
+            killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
+            
         }
+        
+    }
+    
+    func killSpurdo(spurdoNode: SKNode, spurdoPhysBody: SKPhysicsBody, spurdoPosAtContact: CGPoint)
+    {
+        let texture = SKTexture(imageNamed: "dead spurdo")
+        let deadSpurdoSpriteNode = SKSpriteNode(texture: texture)
+        deadSpurdoSpriteNode.name = "dead spurdo"
+        
+        deadSpurdoSpriteNode.position = spurdoPosAtContact
+        deadSpurdoSpriteNode.scale(to: CGSize(width: choiceEntities[1].width, height: choiceEntities[1].height))
+        deadSpurdoSpriteNode.physicsBody = SKPhysicsBody(circleOfRadius: max(choiceEntities[1].width / 2, choiceEntities[1].height / 2))
+        deadSpurdoSpriteNode.physicsBody!.contactTestBitMask = 0b0001 >> 1
+        deadSpurdoSpriteNode.physicsBody!.isDynamic = true
+        
+        spurdoNode.removeFromParent()
+        scene?.addChild(deadSpurdoSpriteNode)
         
     }
     
@@ -457,7 +475,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make camera that follows pird V
 // Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different pirds.
 // Change the physcics shape of spurdo's body V
-// Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it.
+// Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
 // Add planks
 // Change properties of the bodies.
 // Make moving controls in the right lower corner - "joystick" to move screen
