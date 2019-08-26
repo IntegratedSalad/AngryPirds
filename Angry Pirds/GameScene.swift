@@ -9,6 +9,13 @@
 import SpriteKit
 import GameplayKit
 
+enum GameMode
+{
+    case menu
+    case play
+    case create
+}
+
 struct Entity
 {
     let id = UUID()
@@ -29,18 +36,13 @@ struct Entity
 
 class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
-    let pirdTexture = SKTexture(imageNamed: "pird.png")
-
-    let resetText = SKLabelNode(fontNamed: "Courier")
-    let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
-    let grassTexture = SKTexture(imageNamed: "grass.png")
-
     let pirdSize = 32
     let ballRadius = 45
     let choosedEntityToSelectBallPositionX = -300
     let choosedEntityToSelectBallPositionY = 150
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
+    let movingArrowsSize = 80
     
     var choiceEntities: [Entity] = [
         Entity(nameOf: "crate",
@@ -80,14 +82,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     fileprivate lazy var currentEntity = self.choiceEntities[0]
     
+    let grassSize = (CGFloat(90), CGFloat(28))
+    let rangeBallPositionX = -245
+    let rangeBallPositionY = -100
     var choosedEntityToSelectBall = SKShapeNode()
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
     var entityToSelectIcon = SKSpriteNode()
     var touchPoint: CGPoint = CGPoint()
-    let grassSize = (CGFloat(90), CGFloat(28))
+    var gameState = GameMode.create
+    var modeText = SKLabelNode(fontNamed: "Courier")
+    
+    var movingArrowsSprite = SKSpriteNode()
+    
+    let pirdTexture = SKTexture(imageNamed: "pird.png")
+    let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
+    let grassTexture = SKTexture(imageNamed: "grass.png")
+    var movingArrows = SKTexture(imageNamed: "arrows.png")
 
+    let resetText = SKLabelNode(fontNamed: "Courier")
+    
     override func didMove(to view: SKView) {
         
         self.physicsWorld.contactDelegate = self // assigning contact delegate
@@ -116,9 +131,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         rangeBall.fillColor = .white
         rangeBall.glowWidth = 0.1
         
-        let rangeBallPositionX = -245
-        let rangeBallPositionY = -100
-        
         rangeBall.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
         let secondPath = CGMutablePath()
@@ -138,9 +150,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
 
-        resetText.text = "Reset"
-        resetText.fontSize = 14
-        resetText.fontColor = SKColor.white
+        self.resetText.text = "Reset"
+        self.resetText.fontSize = 14
+        self.resetText.fontColor = SKColor.white
+        
+        self.modeText.text = "Play"
+        self.modeText.fontSize = 14
+        self.modeText.fontColor = SKColor.white
+        
+        self.movingArrows.filteringMode = .nearest
+        self.movingArrowsSprite = SKSpriteNode(texture: self.movingArrows)
+        self.movingArrowsSprite.scale(to: CGSize(width: self.movingArrowsSize, height: self.movingArrowsSize))
+        //movingArrowsSprite.position = CGPoint(x: rangeBallPositionX + 400, y: rangeBallPositionY)
+
         // 310, 175
 
         self.pird = texturedPird
@@ -162,16 +184,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(selectBall)
         scene?.addChild(resetText)
         scene?.addChild(cameraNode)
+        scene?.addChild(self.modeText)
+        scene?.addChild(self.movingArrowsSprite)
         scene?.camera = cameraNode
         putGrass(scene: scene)
         
         self.showCurrentChoice()
 
-        //scene?.addChild(rectangularGrass)
-    
     }
     
-    func createSceneContents() {
+    private func createSceneContents() {
         self.backgroundColor = .black
         self.scaleMode = .aspectFit
     }
@@ -254,7 +276,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if self.pird.contains(pos) == false && pos.x > -148 && self.pirdFlew == false
+        if self.pird.contains(pos) == false && pos.x > -148 && self.pirdFlew == false && pos.y < 160
         {
             self.addNewObject(atPoint: pos)
         } else {
@@ -274,6 +296,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             reset()
         }
         
+        if self.modeText.contains(pos)
+        {
+            changeMode()
+        }
+ 
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -293,10 +320,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
                 self.pird.position = pos
                 self.pird.physicsBody?.isDynamic = false
-            
-            // Lock the touch to the pird.
-            // Make pird follow touch pos
-        
+
             }
         } else {
             reset()
@@ -345,14 +369,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             scene?.camera?.position.x = self.pird.position.x
             
         }
-        // if it is resting for more than 2 seconds, reset
-        resetText.position = CGPoint(x: scene!.camera!.position.x + 310, y: 175)
+
+        /* Camera must follow any text or 'static' shape we want to stay in the view. */
+        self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: 175)
+        self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: 175)
+        self.movingArrowsSprite.position = CGPoint(x: 260 + scene!.camera!.position.x, y: CGFloat(rangeBallPositionY))
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
 
 
     }
     
-    func reset()
+    private func reset()
     {
         touchedPird = false
         pirdFlew = false
@@ -369,12 +396,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.entityToSelectIcon)
         scene?.addChild(choosedEntityToSelectBall)
         scene?.addChild(cameraNode)
+        scene?.addChild(self.modeText)
+        scene?.addChild(self.movingArrowsSprite)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
     }
     
-    func putGrass (scene: SKScene?)
+    private func putGrass (scene: SKScene?)
     {
         var posX: CGFloat = CGFloat(-288)
         for _ in 0...30
@@ -392,12 +421,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     let sizeOf: CGFloat = 20
     var menuToSelect: SKNode?
-    func hideEntitiesToSelect() {
+    private func hideEntitiesToSelect() {
         self.menuToSelect?.removeFromParent()
         self.menuToSelect = nil
     }
     
-    func showEntitiesToSelect()
+    private func showEntitiesToSelect()
     {
         self.menuToSelect?.removeFromParent()
         self.menuToSelect = SKNode()
@@ -459,7 +488,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
     }
     
-    func killSpurdo(spurdoNode: SKNode, spurdoPhysBody: SKPhysicsBody, spurdoPosAtContact: CGPoint)
+    private func killSpurdo(spurdoNode: SKNode, spurdoPhysBody: SKPhysicsBody, spurdoPosAtContact: CGPoint)
     {
         let texture = SKTexture(imageNamed: "dead spurdo")
         let deadSpurdoSpriteNode = SKSpriteNode(texture: texture)
@@ -476,6 +505,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
     }
     
+    private func changeMode()
+    {
+        switch self.gameState
+        {
+        case .create:
+            self.gameState = .play
+            self.modeText.text = "Create"
+        case .play:
+            self.gameState = .create
+            self.modeText.text = "Play"
+        default:
+            self.gameState = .create
+        }
+    }
+    
 }
 
 //NEXT:
@@ -486,17 +530,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different pirds.
 // Change the physcics shape of spurdo's body V
 // Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
-// Add planks
-// Spurdos die from falling.
-// Change properties of the bodies.
+// Add planks V
 // Make moving controls in the right lower corner - "joystick" to move screen
 // If player moves joystick, measure the time after he leaves it - 3-4 seconds and camera returns to follow pird.
-// Make resetting boxes optional
+// Make resetting boxes and spurdos optional
+// Spurdos die from falling.
+// Change properties of the bodies - the movement is too fluid.
 // In the upper side there will be a pird to choose, number of them, score etc.
-// Make different types of pirds - exploding ones, the ones that divide into three mid-air, heavier ones.
+// Make exploding barrels with "FUG" written on them.
+// Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
 // Make menu.
 
-// 5/15
+// 8/17
 
 // Better ideas:
 

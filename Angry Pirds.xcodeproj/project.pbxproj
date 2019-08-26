@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D837C54F231496BC00BF64D5 /* arrows.png in Resources */ = {isa = PBXBuildFile; fileRef = D837C54E231496BC00BF64D5 /* arrows.png */; };
 		D8B8C35C22B576DE00AD7053 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */; };
 		D8B8C35E22B576DE00AD7053 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C35D22B576DE00AD7053 /* GameScene.sks */; };
 		D8B8C36022B576DE00AD7053 /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C35F22B576DE00AD7053 /* Actions.sks */; };
@@ -41,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D837C54E231496BC00BF64D5 /* arrows.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrows.png; sourceTree = "<group>"; };
 		D8B8C35822B576DE00AD7053 /* Angry Pirds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Angry Pirds.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D8B8C35D22B576DE00AD7053 /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */,
+				D837C54E231496BC00BF64D5 /* arrows.png */,
 				D8B8C3D522B7005900AD7053 /* plank.png */,
 				D8B8C35D22B576DE00AD7053 /* GameScene.sks */,
 				D8B8C35F22B576DE00AD7053 /* Actions.sks */,
@@ -251,6 +254,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8B8C36722B576DE00AD7053 /* Main.storyboard in Resources */,
+				D837C54F231496BC00BF64D5 /* arrows.png in Resources */,
 				D8B8C3DA22B971ED00AD7053 /* dead spurdo.png in Resources */,
 				D8B8C3D822B8F0CB00AD7053 /* grass.png in Resources */,
 				D8B8C35E22B576DE00AD7053 /* GameScene.sks in Resources */,
