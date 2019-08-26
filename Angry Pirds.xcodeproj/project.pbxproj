@@ -117,11 +117,11 @@
 				D8B8C35F22B576DE00AD7053 /* Actions.sks */,
 				D8B8C36122B576DE00AD7053 /* GameScene.swift */,
 				D8B8C3D922B971ED00AD7053 /* dead spurdo.png */,
-				D8B8C3D722B8F0CB00AD7053 /* grass.png */,
 				D8B8C36322B576DE00AD7053 /* GameViewController.swift */,
 				D8B8C38F22B6324F00AD7053 /* pird.png */,
 				D8B8C36522B576DE00AD7053 /* Main.storyboard */,
 				D8B8C36822B576E000AD7053 /* Assets.xcassets */,
+				D8B8C3D722B8F0CB00AD7053 /* grass.png */,
 				D8B8C36A22B576E000AD7053 /* LaunchScreen.storyboard */,
 				D8B8C36D22B576E000AD7053 /* Info.plist */,
 			);

@@ -64,7 +64,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                mass: 0.03,
                restitution: 0,
                friction: 0.4,
-               angularDamping: 0.15)
+               angularDamping: 0.15),
+        Entity(nameOf: "plank",
+               textureAlive: SKTexture(imageNamed: "plank"),
+               textureDead: SKTexture(imageNamed: "plank"),
+               textureInUse: SKTexture(imageNamed: "plank"),
+               width: 66,
+               height: 8,
+               physicsBodyType: "rectangular",
+               mass: 0.005,
+               restitution: 0,
+               friction: 0.6,
+               angularDamping: 1),
     ]
     
     fileprivate lazy var currentEntity = self.choiceEntities[0]
@@ -80,11 +91,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     override func didMove(to view: SKView) {
         
         self.physicsWorld.contactDelegate = self // assigning contact delegate
-        
-        //let circularPird = SKSpriteNode(texture: pirdTexture)
-        //circularPird.physicsBody = SKPhysicsBody(circleOfRadius: max(circularPird.size.width / 2,
-        //                                                            circularPird.size.height / 2))
-        
+
         let texturedPird = SKSpriteNode(texture: self.pirdTexture)
         texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
                                                  size: CGSize(width: texturedPird.size.width, height: texturedPird.size.height))
@@ -167,7 +174,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     func createSceneContents() {
         self.backgroundColor = .black
         self.scaleMode = .aspectFit
-        //self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
     }
     
     var touchedPird: Bool = false
@@ -196,7 +202,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         newObject.physicsBody?.isDynamic = true
         newObject.position = pos
-        //newObject.physicsBody?.categoryBitMask = 0b0001
         newObject.scale(to: CGSize(width: currentEntity.width, height: currentEntity.height))
         newObject.physicsBody?.mass = currentEntity.mass
         newObject.physicsBody?.restitution = currentEntity.restitution
@@ -249,7 +254,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if self.pird.contains(pos) == false && pos.x > -180 && self.pirdFlew == false
+        if self.pird.contains(pos) == false && pos.x > -148 && self.pirdFlew == false
         {
             self.addNewObject(atPoint: pos)
         } else {
@@ -272,8 +277,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // if touching pird - move pird and lock it so that it doesn't rotate
-        
+
         for t in touches { self.touchDown(atPoint: t.location(in: self)) }
         
     }
@@ -386,7 +390,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
     }
     
-    let sizeOf: Int = 20
+    let sizeOf: CGFloat = 20
     var menuToSelect: SKNode?
     func hideEntitiesToSelect() {
         self.menuToSelect?.removeFromParent()
@@ -417,8 +421,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
             let iconToSelect = SKSpriteNode(texture: texture)
             iconToSelect.position = CGPoint(x: xPos, y: choosedEntityToSelectBallPositionY)
-            iconToSelect.scale(to: CGSize(width: sizeOf, height: sizeOf))
+            
+            let aspectWidth:  Float = Float(sizeOf) / Float(entity.width)
+            let aspectHeight: Float = Float(sizeOf) / Float(entity.height)
+            let aspectRatio:  Float = min(aspectWidth, aspectHeight)
+        
+            iconToSelect.scale(to: CGSize(width: entity.width * CGFloat(aspectRatio), height: entity.height * CGFloat(aspectRatio))) // change that to scale within iconToSelect boundaries
             iconToSelect.name = entity.id.uuidString
+            ball.name = entity.id.uuidString
             xPos += 40
             
             let sprite = SKNode()
@@ -441,7 +451,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         if firstBody.node?.name == "pird" && secondBody.node?.name == "spurdo"
         {
-            /* We delete old and make new node */
+            /* We delete old and make a new node */
 
             killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
             
@@ -477,12 +487,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Change the physcics shape of spurdo's body V
 // Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
 // Add planks
+// Spurdos die from falling.
 // Change properties of the bodies.
 // Make moving controls in the right lower corner - "joystick" to move screen
-// If player moves joystick, measure the time after he leaves it - 3 seconds and camera returns to follow pird.
+// If player moves joystick, measure the time after he leaves it - 3-4 seconds and camera returns to follow pird.
 // Make resetting boxes optional
 // In the upper side there will be a pird to choose, number of them, score etc.
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air, heavier ones.
 // Make menu.
 
-// 5/14
+// 5/15
+
+// Better ideas:
+
+/*
+ 
+   Play | Edit mode. While in edit mode - choose between physics on or physics off,
+   Drag objects holding them with finger, or using joystick. Rotate them by rotating finger on edge of joystick, or taping once on object -
+   "menu" will apear - sort of like in photoshop - circle of dots.
+   Object will be highlighted by a orange tint.
+ 
+ */
