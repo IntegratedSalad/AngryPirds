@@ -245,6 +245,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.choosedEntityToSelectBall.addChild(entityNode)
     }
     
+    
+    var touchedArrows: Bool = false
     func touchDown(atPoint pos : CGPoint) {
         if self.choosedEntityToSelectBall.contains(pos)
         {
@@ -315,6 +317,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
             
             moveCamera(cameraMovePos: dir)
+            touchedArrows = true
             
         }
  
@@ -340,7 +343,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
             }
         } else {
-            reset()
+            if !movingArrowsSprite.contains(pos) { reset() }
         }
         
         if movingArrowsSprite.contains(pos)
@@ -398,7 +401,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
-        if self.pird.position.x > 280
+        if self.pird.position.x > 280 && !touchedArrows
         {
             scene?.camera?.position.x = self.pird.position.x
             
@@ -407,7 +410,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
         self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: scene!.camera!.position.y + 175)
-        self.movingArrowsSprite.position = CGPoint(x: 260 + scene!.camera!.position.x, y: scene!.camera!.position.y - 120)
+        self.movingArrowsSprite.position = CGPoint(x: 250 + scene!.camera!.position.x, y: scene!.camera!.position.y - 100)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY)) //  -300 150
 
 
@@ -417,6 +420,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     {
         touchedPird = false
         pirdFlew = false
+        touchedArrows = false
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
         self.pird.position = self.ball.position
