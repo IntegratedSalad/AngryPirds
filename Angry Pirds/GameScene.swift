@@ -42,7 +42,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let choosedEntityToSelectBallPositionY = 150
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
-    let movingArrowsSize = 80
+    let movingArrowsSize = 110
     
     var choiceEntities: [Entity] = [
         Entity(nameOf: "crate",
@@ -162,6 +162,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.movingArrowsSprite = SKSpriteNode(texture: self.movingArrows)
         self.movingArrowsSprite.scale(to: CGSize(width: self.movingArrowsSize, height: self.movingArrowsSize))
         //movingArrowsSprite.position = CGPoint(x: rangeBallPositionX + 400, y: rangeBallPositionY)
+        self.movingArrowsSprite.zPosition = 1
 
         // 310, 175
 
@@ -183,10 +184,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.entityToSelectIcon)
         scene?.addChild(selectBall)
         scene?.addChild(resetText)
-        scene?.addChild(cameraNode)
+        scene?.addChild(self.cameraNode)
         scene?.addChild(self.modeText)
         scene?.addChild(self.movingArrowsSprite)
-        scene?.camera = cameraNode
+        scene?.camera = self.cameraNode
         putGrass(scene: scene)
         
         self.showCurrentChoice()
@@ -276,7 +277,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if self.pird.contains(pos) == false && pos.x > -148 && self.pirdFlew == false && pos.y < 160
+        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && pos.y < 160 && !self.movingArrowsSprite.contains(pos)
         {
             self.addNewObject(atPoint: pos)
         } else {
@@ -299,6 +300,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if self.modeText.contains(pos)
         {
             changeMode()
+        }
+        
+        if self.movingArrowsSprite.contains(pos)
+        {
+            let fingerX = pos.x
+            let fingerY = pos.y
+            let spriteX = self.movingArrowsSprite.position.x
+            let spriteY = self.movingArrowsSprite.position.y
+ 
+            //print("camera x camera y: \(scene!.camera!.position.x) \(scene!.camera!.position.y)")
+            
+            //print("After touch:")
+            let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
+            
+            moveCamera(cameraMovePos: dir)
+            
         }
  
     }
@@ -325,6 +342,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         } else {
             reset()
         }
+        
+        if movingArrowsSprite.contains(pos)
+        {
+            let fingerX = pos.x
+            let fingerY = pos.y
+            let spriteX = self.movingArrowsSprite.position.x
+            let spriteY = self.movingArrowsSprite.position.y
+            
+            //print("camera x camera y: \(scene!.camera!.position.x) \(scene!.camera!.position.y)")
+            
+            //print("After touch:")
+            let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
+            
+            moveCamera(cameraMovePos: dir)
+            
+        }
+        
     }
     
     var pirdFlew: Bool = false
@@ -371,10 +405,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
 
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
-        self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: 175)
-        self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: 175)
-        self.movingArrowsSprite.position = CGPoint(x: 260 + scene!.camera!.position.x, y: CGFloat(rangeBallPositionY))
-        choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
+        self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
+        self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: scene!.camera!.position.y + 175)
+        self.movingArrowsSprite.position = CGPoint(x: 260 + scene!.camera!.position.x, y: scene!.camera!.position.y - 120)
+        choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY)) //  -300 150
 
 
     }
@@ -518,6 +552,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         default:
             self.gameState = .create
         }
+    }
+    
+    private func getCameraMovePos(touchPosX: CGFloat, touchPosY: CGFloat, spritePosX: CGFloat, spritePosY: CGFloat)
+        ->
+        (CGFloat, CGFloat)
+    {
+        // constrain it to 0,0 so it doesn't move below or beyond scene far left.
+        
+        let dirX: CGFloat = touchPosX - spritePosX
+        let dirY: CGFloat = touchPosY - spritePosY
+        
+        return (scene!.camera!.position.x + (dirX * 1.4), scene!.camera!.position.y + (dirY * 1.4))
+    }
+    
+    private func moveCamera(cameraMovePos: (CGFloat, CGFloat))
+    {
+        let smoothMove = SKAction.move(to: CGPoint(x: cameraMovePos.0, y: cameraMovePos.1), duration: 0.2)
+        
+        camera!.run(smoothMove)
     }
     
 }
