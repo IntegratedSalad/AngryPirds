@@ -40,6 +40,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let ballRadius = 45
     let choosedEntityToSelectBallPositionX = -300
     let choosedEntityToSelectBallPositionY = 150
+    let changeCameraFollowPirdBallX = -300
+    let changeCameraFollowPirdBallY = 100
+    
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
     let movingArrowsSize = 110
@@ -86,6 +89,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let rangeBallPositionX = -245
     let rangeBallPositionY = -100
     var choosedEntityToSelectBall = SKShapeNode()
+    var changeCameraFollowPirdBall = SKShapeNode()
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
@@ -93,13 +97,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var touchPoint: CGPoint = CGPoint()
     var gameState = GameMode.create
     var modeText = SKLabelNode(fontNamed: "Courier")
+    var changeCameraFollowPirdSprite = SKSpriteNode()
     
     var movingArrowsSprite = SKSpriteNode()
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
+    let cameraFollowTexture = SKTexture(imageNamed: "followpird.png")
     let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
     let grassTexture = SKTexture(imageNamed: "grass.png")
     var movingArrows = SKTexture(imageNamed: "arrows.png")
+    
 
     let resetText = SKLabelNode(fontNamed: "Courier")
     
@@ -135,9 +142,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.choosedEntityToSelectBall.fillColor = .white
         self.choosedEntityToSelectBall.strokeColor = .orange
         self.choosedEntityToSelectBall.glowWidth = 1
-
         self.choosedEntityToSelectBall.position = CGPoint(x: self.choosedEntityToSelectBallPositionX, y: self.choosedEntityToSelectBallPositionY)
 
+        self.changeCameraFollowPirdBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius), x: changeCameraFollowPirdBallX, y: changeCameraFollowPirdBallY, color: .white, strokeColor: .orange)
+        self.changeCameraFollowPirdBall.glowWidth = 1
+        changeCameraFollowPirdSprite = SKSpriteNode(texture: cameraFollowTexture)
+        
+        changeCameraFollowPirdSprite.position.x = CGFloat(changeCameraFollowPirdBallX - 1)
+        changeCameraFollowPirdSprite.position.y = CGFloat(changeCameraFollowPirdBallY - 2)
+        
+        let changeCameraFollowPirdSpriteRatio = getRatio(sizeOf: Float(20), width: Float(changeCameraFollowPirdSprite.size.width), height: Float(changeCameraFollowPirdSprite.size.height))
+        
+        changeCameraFollowPirdSprite.scale(to:
+            CGSize(width: (changeCameraFollowPirdSprite.size.width + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio),
+                   height: (changeCameraFollowPirdSprite.size.height + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio)))
+        
         texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
 
         self.resetText.text = "Reset"
@@ -172,11 +191,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.entityToSelectIcon)
-        scene?.addChild(selectBall)
-        scene?.addChild(resetText)
+        scene?.addChild(self.selectBall)
+        scene?.addChild(self.resetText)
         scene?.addChild(self.cameraNode)
         scene?.addChild(self.modeText)
         scene?.addChild(self.movingArrowsSprite)
+        scene?.addChild(self.changeCameraFollowPirdBall)
+        scene?.addChild(self.changeCameraFollowPirdSprite)
         scene?.camera = self.cameraNode
         putGrass(scene: scene)
         
@@ -230,8 +251,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.choosedEntityToSelectBall.removeAllChildren()
         
         let entityNode = SKSpriteNode(texture: entity.textureInUse)
-        let ballSize = self.choosedEntityToSelectBall.frame.size
-        entityNode.size = CGSize(width: ballSize.width/CGFloat(2.0), height: ballSize.height/CGFloat(2.0))
+        
+        let ratio = getRatio(sizeOf: Float(sizeOf), width: Float(entityNode.size.width), height: Float(entityNode.size.height))
+        
+        entityNode.scale(to: CGSize(width: entityNode.size.width * CGFloat(ratio), height: entityNode.size.height * CGFloat(ratio)))
         self.choosedEntityToSelectBall.addChild(entityNode)
     }
     
@@ -293,15 +316,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             let fingerY = pos.y
             let spriteX = self.movingArrowsSprite.position.x
             let spriteY = self.movingArrowsSprite.position.y
- 
-            //print("camera x camera y: \(scene!.camera!.position.x) \(scene!.camera!.position.y)")
-            
-            //print("After touch:")
+
             let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
             
             moveCamera(cameraMovePos: dir)
             touchedArrows = true
             
+        }
+        if self.changeCameraFollowPirdBall.contains(pos)
+        {
+            changeCameraFollow()
         }
  
     }
@@ -380,7 +404,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
-        if self.pird.position.x > 280 && !touchedArrows
+        if self.pird.position.x > 280 && !touchedArrows && cameraFollows
         {
             scene?.camera?.position.x = self.pird.position.x
             
@@ -393,22 +417,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.hideEntitiesToSelect()
         }
         
-        
-        
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
         self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: scene!.camera!.position.y + 175)
         self.movingArrowsSprite.position = CGPoint(x: 250 + scene!.camera!.position.x, y: scene!.camera!.position.y - 100)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
+        
+        self.changeCameraFollowPirdBall.position = CGPoint(x: CGFloat(changeCameraFollowPirdBallX) + scene!.camera!.position.x,
+                                                           y: CGFloat(changeCameraFollowPirdBallY) + scene!.camera!.position.y)
+        self.changeCameraFollowPirdSprite.position = CGPoint(x: CGFloat(changeCameraFollowPirdBallX - 1) + scene!.camera!.position.x,
+                                                           y: CGFloat(changeCameraFollowPirdBallY - 2) + scene!.camera!.position.y)
 
 
     }
     
     private func reset()
     {
+        
+        /* It would be better to contain all the bools in one array */
         touchedPird = false
         pirdFlew = false
         touchedArrows = false
+        cameraFollows = true
+        self.changeCameraFollowPirdBall.glowWidth = 1
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
         self.pird.position = self.ball.position
@@ -424,6 +455,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(cameraNode)
         scene?.addChild(self.modeText)
         scene?.addChild(self.movingArrowsSprite)
+        scene?.addChild(self.changeCameraFollowPirdBall)
+        scene?.addChild(self.changeCameraFollowPirdSprite)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
@@ -478,10 +511,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             let iconToSelect = SKSpriteNode(texture: texture)
             iconToSelect.position = CGPoint(x: xPos, y: yPos)
             
-            /* Change that into function */
-            let aspectWidth:  Float = Float(sizeOf) / Float(entity.width)
-            let aspectHeight: Float = Float(sizeOf) / Float(entity.height)
-            let aspectRatio:  Float = min(aspectWidth, aspectHeight)
+            let aspectRatio = getRatio(sizeOf: Float(sizeOf), width: Float(entity.width), height: Float(entity.height))
         
             iconToSelect.scale(to: CGSize(width: entity.width * CGFloat(aspectRatio), height: entity.height * CGFloat(aspectRatio)))
             iconToSelect.name = entity.id.uuidString
@@ -581,7 +611,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let ball = SKShapeNode(path: path)
         ball.lineWidth = 0.3
         ball.fillColor = color
-        ball.glowWidth = 0.1
+        ball.glowWidth = 1
         
         if let sColor = strokeColor {
             ball.strokeColor = sColor
@@ -592,6 +622,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         return ball
     }
     
+    private func getRatio(sizeOf: Float, width: Float, height: Float)
+        ->
+        Float
+        
+    {
+        let aspectWidth:  Float = sizeOf / width
+        let aspectHeight: Float = sizeOf / height
+        return Float(min(aspectWidth, aspectHeight))
+    }
+    
+    var cameraFollows: Bool = true
+    private func changeCameraFollow()
+    {
+        cameraFollows.toggle()
+        
+        if cameraFollows
+        {
+            self.changeCameraFollowPirdBall.glowWidth = 1
+            touchedArrows = false
+        } else {
+            self.changeCameraFollowPirdBall.glowWidth = 0
+        }
+    }
     
 }
 
@@ -607,11 +660,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
 // Add planks V
 // Make moving controls in the right lower corner - "joystick" to move screen V
-// Make follow pird button on the left.
-// Make icons on the left, below choosing entity circle.
-// If more icons will appear - add their positions to a list and check with any() in order to know, when not to do certain actions when clicked on UI. Right now I'm checking resetting, and not doing so, when tapping on arrows.
+// Make follow pird button on the left. V
+// Make icons on the left, below choosing entity circle. V
+// If more icons will appear - add their positions to a list and check with any() in order to know, when not to do certain actions when clicked on UI. Right now I'm checking resetting, and not doing so, when tapping on arrows - it will stack up with booleans and actions to check.
 
-// Make resetting boxes and spurdos optional
+// Make resetting boxes and spurdos optional - buttons.
 // Fix zPositions of sprites.
 // Spurdos die from falling.
 // Change properties of the bodies - the movement is too fluid.
