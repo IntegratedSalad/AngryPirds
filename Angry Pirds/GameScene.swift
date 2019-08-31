@@ -42,6 +42,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let choosedEntityToSelectBallPositionY = 150
     let changeCameraFollowPirdBallX = -300
     let changeCameraFollowPirdBallY = 100
+    let physicsButtonBallX = -300
+    let physicsButtonBallY = 50
     
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
@@ -83,6 +85,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                angularDamping: 1),
     ]
     
+    var entitiesOnMap: [SKSpriteNode] = [] // used to disable isDynamic property of every entity on map (besides pird).
+    
     fileprivate lazy var currentEntity = self.choiceEntities[0]
     
     let grassSize = (CGFloat(90), CGFloat(28))
@@ -90,14 +94,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let rangeBallPositionY = -100
     var choosedEntityToSelectBall = SKShapeNode()
     var changeCameraFollowPirdBall = SKShapeNode()
+    var physicsButtonBall = SKShapeNode()
+    var resetPirdButtionBall = SKShapeNode()
+    var modeBall = SKShapeNode()
     var pird = SKSpriteNode()
     var ball = SKShapeNode()
     var selectBall = SKShapeNode()
     var entityToSelectIcon = SKSpriteNode()
     var touchPoint: CGPoint = CGPoint()
     var gameState = GameMode.create
-    var modeText = SKLabelNode(fontNamed: "Courier")
     var changeCameraFollowPirdSprite = SKSpriteNode()
+    var physicsButtonSprite = SKSpriteNode()
+    var gameModeSprite = SKSpriteNode()
     
     var movingArrowsSprite = SKSpriteNode()
     
@@ -105,6 +113,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let cameraFollowTexture = SKTexture(imageNamed: "followpird.png")
     let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
     let grassTexture = SKTexture(imageNamed: "grass.png")
+    let physicsButtonTexture = SKTexture(imageNamed: "physicsbutton.png")
+    let resetPirdButtonTexture = SKTexture(imageNamed: "resetpird.png")
+    let playIconTexture = SKTexture(imageNamed: "playicon.png")
+    let createIconTexture = SKTexture(imageNamed: "createicon.png")
     var movingArrows = SKTexture(imageNamed: "arrows.png")
     
 
@@ -123,6 +135,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         texturedPird.physicsBody?.allowsRotation = true
         texturedPird.physicsBody?.contactTestBitMask = 0b0001
         texturedPird.physicsBody?.restitution = 0.25
+        texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         //texturedPird.physicsBody?.categoryBitMask = 0b0001
         //texturedPird.physicsBody?.mass = 8
         
@@ -130,6 +143,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         rangeBall.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
+        /* Change */
         let secondPath = CGMutablePath()
         secondPath.addArc(center: CGPoint.zero,
                           radius: CGFloat(choosedEntityToSelectBallRadius),
@@ -143,37 +157,59 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.choosedEntityToSelectBall.strokeColor = .orange
         self.choosedEntityToSelectBall.glowWidth = 1
         self.choosedEntityToSelectBall.position = CGPoint(x: self.choosedEntityToSelectBallPositionX, y: self.choosedEntityToSelectBallPositionY)
+        /* This */
 
         self.changeCameraFollowPirdBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius), x: changeCameraFollowPirdBallX, y: changeCameraFollowPirdBallY, color: .white, strokeColor: .orange)
         self.changeCameraFollowPirdBall.glowWidth = 1
-        changeCameraFollowPirdSprite = SKSpriteNode(texture: cameraFollowTexture)
+        self.changeCameraFollowPirdSprite = SKSpriteNode(texture: cameraFollowTexture)
         
-        changeCameraFollowPirdSprite.position.x = CGFloat(changeCameraFollowPirdBallX - 1)
-        changeCameraFollowPirdSprite.position.y = CGFloat(changeCameraFollowPirdBallY - 2)
+        self.changeCameraFollowPirdSprite.position.x = CGFloat(changeCameraFollowPirdBallX - 1)
+        self.changeCameraFollowPirdSprite.position.y = CGFloat(changeCameraFollowPirdBallY - 2)
         
         let changeCameraFollowPirdSpriteRatio = getRatio(sizeOf: Float(20), width: Float(changeCameraFollowPirdSprite.size.width), height: Float(changeCameraFollowPirdSprite.size.height))
         
-        changeCameraFollowPirdSprite.scale(to:
-            CGSize(width: (changeCameraFollowPirdSprite.size.width + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio),
-                   height: (changeCameraFollowPirdSprite.size.height + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio)))
+        self.changeCameraFollowPirdSprite.scale(to:
+            CGSize(width: (self.changeCameraFollowPirdSprite.size.width + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio),
+                   height: (self.changeCameraFollowPirdSprite.size.height + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio)))
         
-        texturedPird.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
-
+        
+        self.physicsButtonBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius), x: physicsButtonBallX, y: physicsButtonBallY, color: .white, strokeColor: .orange)
+        
+        self.physicsButtonBall.glowWidth = 1
+        
+        self.physicsButtonSprite = SKSpriteNode(texture: self.physicsButtonTexture)
+        self.physicsButtonSprite.position.x = CGFloat(physicsButtonBallX)
+        self.physicsButtonSprite.position.y = CGFloat(physicsButtonBallY)
+        
+        let physicsButtonSpriteRatio = getRatio(sizeOf: Float(20), width: Float(physicsButtonSprite.size.width),
+                                                height: Float(physicsButtonSprite.size.height))
+        
+        self.physicsButtonSprite.scale(to: CGSize(width: (self.physicsButtonSprite.size.width + CGFloat(10)) * CGFloat(physicsButtonSpriteRatio),
+                                                  height: (self.physicsButtonSprite.size.height + CGFloat(10)) * CGFloat(physicsButtonSpriteRatio)))
+        
+        
+        self.modeBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius),
+                                   x: Int(self.choosedEntityToSelectBallPositionX) + 602,
+                                   y: self.choosedEntityToSelectBallPositionY, color: .white, strokeColor: nil)
+        
+        self.gameModeSprite = SKSpriteNode(texture: playIconTexture)
+        self.gameModeSprite.position.x = modeBall.position.x + 1
+        self.gameModeSprite.position.y = modeBall.position.y
+        
+        let gameModeSpriteRatio = getRatio(sizeOf: Float(20), width: Float(gameModeSprite.size.width), height: Float(gameModeSprite.size.height))
+        gameModeSprite.scale(to: CGSize(width: self.gameModeSprite.size.width * CGFloat(gameModeSpriteRatio),
+                                        height: self.gameModeSprite.size.height * CGFloat(gameModeSpriteRatio)))
+        
+        
+        
         self.resetText.text = "Reset"
         self.resetText.fontSize = 14
         self.resetText.fontColor = SKColor.white
         
-        self.modeText.text = "Play"
-        self.modeText.fontSize = 14
-        self.modeText.fontColor = SKColor.white
-        
         self.movingArrows.filteringMode = .nearest
         self.movingArrowsSprite = SKSpriteNode(texture: self.movingArrows)
         self.movingArrowsSprite.scale(to: CGSize(width: self.movingArrowsSize, height: self.movingArrowsSize))
-        //movingArrowsSprite.position = CGPoint(x: rangeBallPositionX + 400, y: rangeBallPositionY)
         self.movingArrowsSprite.zPosition = 1
-
-        // 310, 175
 
         self.pird = texturedPird
         self.pird.name = "pird"
@@ -194,10 +230,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.selectBall)
         scene?.addChild(self.resetText)
         scene?.addChild(self.cameraNode)
-        scene?.addChild(self.modeText)
         scene?.addChild(self.movingArrowsSprite)
         scene?.addChild(self.changeCameraFollowPirdBall)
         scene?.addChild(self.changeCameraFollowPirdSprite)
+        scene?.addChild(self.physicsButtonBall)
+        scene?.addChild(self.physicsButtonSprite)
+        scene?.addChild(self.modeBall)
+        scene?.addChild(self.gameModeSprite)
         scene?.camera = self.cameraNode
         putGrass(scene: scene)
         
@@ -206,7 +245,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     }
     
     private func createSceneContents() {
-        self.backgroundColor = .black
+        self.backgroundColor = UIColor(red: 0.106, green: 0.167, blue: 0.236, alpha: 1.0)
         self.scaleMode = .aspectFit
     }
     
@@ -285,7 +324,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && pos.y < 160 && !self.movingArrowsSprite.contains(pos)
+        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && pos.y < 160 && !self.movingArrowsSprite.contains(pos) // add bool - touched icon and turn it to true every time the button is pushed
         {
             self.addNewObject(atPoint: pos)
         } else {
@@ -303,11 +342,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if self.resetText.contains(pos)
         {
             reset()
-        }
-        
-        if self.modeText.contains(pos)
-        {
-            changeMode()
         }
         
         if self.movingArrowsSprite.contains(pos)
@@ -419,7 +453,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
-        self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: scene!.camera!.position.y + 175)
         self.movingArrowsSprite.position = CGPoint(x: 250 + scene!.camera!.position.x, y: scene!.camera!.position.y - 100)
         choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
         
@@ -427,6 +460,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                                                            y: CGFloat(changeCameraFollowPirdBallY) + scene!.camera!.position.y)
         self.changeCameraFollowPirdSprite.position = CGPoint(x: CGFloat(changeCameraFollowPirdBallX - 1) + scene!.camera!.position.x,
                                                            y: CGFloat(changeCameraFollowPirdBallY - 2) + scene!.camera!.position.y)
+        
+        self.physicsButtonBall.position = CGPoint(x: CGFloat(physicsButtonBallX) + scene!.camera!.position.x,
+                                                           y: CGFloat(physicsButtonBallY) + scene!.camera!.position.y)
+        self.physicsButtonSprite.position = CGPoint(x: CGFloat(physicsButtonBallX) + scene!.camera!.position.x,
+                                                             y: CGFloat(physicsButtonBallY) + scene!.camera!.position.y)
 
 
     }
@@ -453,10 +491,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.entityToSelectIcon)
         scene?.addChild(choosedEntityToSelectBall)
         scene?.addChild(cameraNode)
-        scene?.addChild(self.modeText)
         scene?.addChild(self.movingArrowsSprite)
         scene?.addChild(self.changeCameraFollowPirdBall)
         scene?.addChild(self.changeCameraFollowPirdSprite)
+        scene?.addChild(self.physicsButtonBall)
+        scene?.addChild(self.physicsButtonSprite)
+        scene?.addChild(self.modeBall)
+        scene?.addChild(self.gameModeSprite)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
         
@@ -569,10 +610,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         {
         case .create:
             self.gameState = .play
-            self.modeText.text = "Create"
+            self.gameModeSprite.texture = self.createIconTexture
+            //
         case .play:
             self.gameState = .create
-            self.modeText.text = "Play"
+            //
         default:
             self.gameState = .create
         }
