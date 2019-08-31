@@ -119,17 +119,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         //texturedPird.physicsBody?.categoryBitMask = 0b0001
         //texturedPird.physicsBody?.mass = 8
         
-        let path = CGMutablePath()
-        path.addArc(center: CGPoint.zero,
-                    radius: CGFloat(ballRadius),
-                    startAngle: 0,
-                    endAngle: CGFloat.pi * 2,
-                    clockwise: true)
-        
-        let rangeBall = SKShapeNode(path: path)
-        rangeBall.lineWidth = 0.3
-        rangeBall.fillColor = .white
-        rangeBall.glowWidth = 0.1
+        let rangeBall = createBall(radiusOf: CGFloat(ballRadius), x: rangeBallPositionX, y: rangeBallPositionY, color: .white, strokeColor: nil)
         
         rangeBall.position = CGPoint(x: rangeBallPositionX, y: rangeBallPositionY)
         
@@ -253,13 +243,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.touchedIcon.toggle()
         }
         
-        if self.touchedIcon == true
-        {
-            self.showEntitiesToSelect()
-        } else {
-            self.hideEntitiesToSelect()
-        }
-        
         let nodes = self.nodes(at: pos)
         
         for node in nodes {
@@ -353,9 +336,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             let spriteX = self.movingArrowsSprite.position.x
             let spriteY = self.movingArrowsSprite.position.y
             
-            //print("camera x camera y: \(scene!.camera!.position.x) \(scene!.camera!.position.y)")
-            
-            //print("After touch:")
             let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
             
             moveCamera(cameraMovePos: dir)
@@ -366,8 +346,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     var pirdFlew: Bool = false
     func touchUp(atPoint pos : CGPoint) {
-        //self.pird.position = self.ball.position
-        
+
         if touchedPird && !pirdFlew {
             self.pird.physicsBody?.isDynamic = true
             self.pird.constraints = []
@@ -407,11 +386,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
         }
 
+        if self.touchedIcon == true
+        {
+            self.showEntitiesToSelect()
+        } else {
+            self.hideEntitiesToSelect()
+        }
+        
+        
+        
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
         self.modeText.position  =  CGPoint(x: scene!.camera!.position.x + 260, y: scene!.camera!.position.y + 175)
         self.movingArrowsSprite.position = CGPoint(x: 250 + scene!.camera!.position.x, y: scene!.camera!.position.y - 100)
-        choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY)) //  -300 150
+        choosedEntityToSelectBall.position = CGPoint(x: scene!.camera!.position.x + CGFloat(choosedEntityToSelectBallPositionX), y:scene!.camera!.position.y + CGFloat(choosedEntityToSelectBallPositionY))
 
 
     }
@@ -469,7 +457,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.menuToSelect?.removeFromParent()
         self.menuToSelect = SKNode()
         
-        var xPos = self.choosedEntityToSelectBallPositionX + 40
+        var xPos = CGFloat(self.choosedEntityToSelectBallPositionX) + CGFloat(40) + scene!.camera!.position.x
+        let yPos = CGFloat(self.choosedEntityToSelectBallPositionY) + scene!.camera!.position.y
         for entity in self.choiceEntities
         {
             let path = CGMutablePath()
@@ -482,18 +471,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             ball.lineWidth = 0.3
             ball.fillColor = .white
             ball.glowWidth = 0.1
-            ball.position = CGPoint(x: xPos, y: choosedEntityToSelectBallPositionY)
+            ball.position = CGPoint(x: xPos, y: yPos)
            
             let texture = entity.textureInUse
             
             let iconToSelect = SKSpriteNode(texture: texture)
-            iconToSelect.position = CGPoint(x: xPos, y: choosedEntityToSelectBallPositionY)
+            iconToSelect.position = CGPoint(x: xPos, y: yPos)
             
+            /* Change that into function */
             let aspectWidth:  Float = Float(sizeOf) / Float(entity.width)
             let aspectHeight: Float = Float(sizeOf) / Float(entity.height)
             let aspectRatio:  Float = min(aspectWidth, aspectHeight)
         
-            iconToSelect.scale(to: CGSize(width: entity.width * CGFloat(aspectRatio), height: entity.height * CGFloat(aspectRatio))) // change that to scale within iconToSelect boundaries
+            iconToSelect.scale(to: CGSize(width: entity.width * CGFloat(aspectRatio), height: entity.height * CGFloat(aspectRatio)))
             iconToSelect.name = entity.id.uuidString
             ball.name = entity.id.uuidString
             xPos += 40
@@ -577,7 +567,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         camera!.run(smoothMove)
     }
     
+    private func createBall(radiusOf: CGFloat, x: Int, y: Int, color: UIColor, strokeColor: UIColor?)
+        ->
+        SKShapeNode
+    {
+        let path = CGMutablePath()
+        path.addArc(center: CGPoint.zero,
+                    radius: radiusOf,
+                    startAngle: 0,
+                    endAngle: CGFloat.pi * 2,
+                    clockwise: true)
+        
+        let ball = SKShapeNode(path: path)
+        ball.lineWidth = 0.3
+        ball.fillColor = color
+        ball.glowWidth = 0.1
+        
+        if let sColor = strokeColor {
+            ball.strokeColor = sColor
+        }
+        
+        ball.position = CGPoint(x: x, y: y)
+        
+        return ball
+    }
+    
+    
 }
+
+
 
 //NEXT:
 // Collisions V
@@ -588,12 +606,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Change the physcics shape of spurdo's body V
 // Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
 // Add planks V
-// Make moving controls in the right lower corner - "joystick" to move screen
-// If player moves joystick, measure the time after he leaves it - 3-4 seconds and camera returns to follow pird.
+// Make moving controls in the right lower corner - "joystick" to move screen V
+// Make follow pird button on the left.
+// Make icons on the left, below choosing entity circle.
+// If more icons will appear - add their positions to a list and check with any() in order to know, when not to do certain actions when clicked on UI. Right now I'm checking resetting, and not doing so, when tapping on arrows.
+
 // Make resetting boxes and spurdos optional
+// Fix zPositions of sprites.
 // Spurdos die from falling.
 // Change properties of the bodies - the movement is too fluid.
-// In the upper side there will be a pird to choose, number of them, score etc.
+// In the lower left bottom there will be a pird to choose.
+// Fix pird flying farther when touch is above him and within circle radius.
 // Make exploding barrels with "FUG" written on them.
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
 // Make menu.
@@ -604,7 +627,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
 /*
  
-   Play | Edit mode. While in edit mode - choose between physics on or physics off,
+   Play | Edit mode. While in edit mode - choose between physics on or physics off - button on the left while in create mode
    Drag objects holding them with finger, or using joystick. Rotate them by rotating finger on edge of joystick, or taping once on object -
    "menu" will apear - sort of like in photoshop - circle of dots.
    Object will be highlighted by a orange tint.
