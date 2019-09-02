@@ -106,7 +106,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var changeCameraFollowPirdSprite = SKSpriteNode()
     var physicsButtonSprite = SKSpriteNode()
     var gameModeSprite = SKSpriteNode()
-    
     var movingArrowsSprite = SKSpriteNode()
     
     let pirdTexture = SKTexture(imageNamed: "pird.png")
@@ -119,7 +118,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let createIconTexture = SKTexture(imageNamed: "createicon.png")
     var movingArrows = SKTexture(imageNamed: "arrows.png")
     
-
     let resetText = SKLabelNode(fontNamed: "Courier")
     
     override func didMove(to view: SKView) {
@@ -273,7 +271,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             newObject.physicsBody?.contactTestBitMask = 0b0001 >> 1
         }
         
-        newObject.physicsBody?.isDynamic = true
+        if physicsStatus {newObject.physicsBody?.isDynamic = true} else {newObject.physicsBody?.isDynamic = false}
         newObject.position = pos
         newObject.scale(to: CGSize(width: currentEntity.width, height: currentEntity.height))
         newObject.physicsBody?.mass = currentEntity.mass
@@ -282,6 +280,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
         newObject.name = currentEntity.nameOf
+        
+        entitiesOnMap.append(newObject)
+        
         scene?.addChild(newObject)
     }
     
@@ -360,6 +361,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if self.changeCameraFollowPirdBall.contains(pos)
         {
             changeCameraFollow()
+        }
+        
+        if self.physicsButtonSprite.contains(pos)
+        {
+            changePhysicsStatusOfEntities()
         }
  
     }
@@ -463,8 +469,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         self.physicsButtonBall.position = CGPoint(x: CGFloat(physicsButtonBallX) + scene!.camera!.position.x,
                                                            y: CGFloat(physicsButtonBallY) + scene!.camera!.position.y)
-        self.physicsButtonSprite.position = CGPoint(x: CGFloat(physicsButtonBallX) + scene!.camera!.position.x,
-                                                             y: CGFloat(physicsButtonBallY) + scene!.camera!.position.y)
+        
+        self.physicsButtonSprite.position = self.physicsButtonBall.position
+        
+        self.modeBall.position = CGPoint(x: CGFloat(Int(self.choosedEntityToSelectBallPositionX) + 602) + scene!.camera!.position.x,
+                                                  y: CGFloat(self.choosedEntityToSelectBallPositionY) + scene!.camera!.position.y)
+        
+        self.gameModeSprite.position = self.modeBall.position
 
 
     }
@@ -477,6 +488,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         pirdFlew = false
         touchedArrows = false
         cameraFollows = true
+        physicsStatus = true
         self.changeCameraFollowPirdBall.glowWidth = 1
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
@@ -688,6 +700,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
     }
     
+    var physicsStatus: Bool = true
+    private func changePhysicsStatusOfEntities()
+    {
+        physicsStatus.toggle()
+        
+        if physicsStatus
+        {
+            self.physicsButtonBall.glowWidth = 1
+            for node in entitiesOnMap
+            {
+                node.physicsBody?.isDynamic = true
+            }
+        } else {
+            self.physicsButtonBall.glowWidth = 0
+            for node in entitiesOnMap
+            {
+                node.physicsBody?.isDynamic = false
+            }
+        }
+    }
+    
 }
 
 
@@ -705,6 +738,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make follow pird button on the left. V
 // Make icons on the left, below choosing entity circle. V
 // If more icons will appear - add their positions to a list and check with any() in order to know, when not to do certain actions when clicked on UI. Right now I'm checking resetting, and not doing so, when tapping on arrows - it will stack up with booleans and actions to check.
+// Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird.
 
 // Make resetting boxes and spurdos optional - buttons.
 // Fix zPositions of sprites.
