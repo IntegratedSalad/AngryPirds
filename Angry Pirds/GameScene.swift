@@ -281,7 +281,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         newObject.name = currentEntity.nameOf
         
-        entitiesOnMap.append(newObject)
+        //entitiesOnMap.append(newObject)
         
         scene?.addChild(newObject)
     }
@@ -456,6 +456,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         } else {
             self.hideEntitiesToSelect()
         }
+        /*
         
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
@@ -477,7 +478,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         self.gameModeSprite.position = self.modeBall.position
 
-
+*/
     }
     
     private func reset()
@@ -490,6 +491,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         cameraFollows = true
         physicsStatus = true
         self.changeCameraFollowPirdBall.glowWidth = 1
+        self.physicsButtonBall.glowWidth = 1
         scene?.removeAllChildren()
         self.pird.physicsBody?.isDynamic = false
         self.pird.position = self.ball.position
@@ -501,8 +503,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
         scene?.addChild(self.entityToSelectIcon)
-        scene?.addChild(choosedEntityToSelectBall)
-        scene?.addChild(cameraNode)
+        scene?.addChild(self.choosedEntityToSelectBall)
+        scene?.addChild(self.cameraNode)
         scene?.addChild(self.movingArrowsSprite)
         scene?.addChild(self.changeCameraFollowPirdBall)
         scene?.addChild(self.changeCameraFollowPirdSprite)
@@ -583,7 +585,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
     }
     
-    
+    /*
     func didBegin(_ contact: SKPhysicsContact)
     {
         let firstBody = contact.bodyA
@@ -592,12 +594,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if firstBody.node?.name == "pird" && secondBody.node?.name == "spurdo"
         {
             /* We delete old and make a new node */
+            
+            print(secondBody.node!.name!)
 
             killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
             
         }
         
     }
+ */
     
     private func killSpurdo(spurdoNode: SKNode, spurdoPhysBody: SKPhysicsBody, spurdoPosAtContact: CGPoint)
     {
@@ -609,7 +614,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         deadSpurdoSpriteNode.scale(to: CGSize(width: choiceEntities[1].width, height: choiceEntities[1].height))
         deadSpurdoSpriteNode.physicsBody = SKPhysicsBody(circleOfRadius: max(choiceEntities[1].width / 2, choiceEntities[1].height / 2))
         deadSpurdoSpriteNode.physicsBody!.contactTestBitMask = 0b0001 >> 1
-        deadSpurdoSpriteNode.physicsBody!.isDynamic = true
+        
+        if physicsStatus {deadSpurdoSpriteNode.physicsBody?.isDynamic = true} else {deadSpurdoSpriteNode.physicsBody?.isDynamic = false}
         
         spurdoNode.removeFromParent()
         scene?.addChild(deadSpurdoSpriteNode)
