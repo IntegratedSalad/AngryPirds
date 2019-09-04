@@ -85,8 +85,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                angularDamping: 1),
     ]
     
-    var entitiesOnMap: [SKSpriteNode] = [] // used to disable isDynamic property of every entity on map (besides pird).
-    
     fileprivate lazy var currentEntity = self.choiceEntities[0]
     
     let grassSize = (CGFloat(90), CGFloat(28))
@@ -239,6 +237,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         putGrass(scene: scene)
         
         self.showCurrentChoice()
+        
+        print(scene!.children)
 
     }
     
@@ -280,9 +280,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
         newObject.name = currentEntity.nameOf
-        
-        //entitiesOnMap.append(newObject)
-        
+
         scene?.addChild(newObject)
     }
     
@@ -456,7 +454,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         } else {
             self.hideEntitiesToSelect()
         }
-        /*
+        
         
         /* Camera must follow any text or 'static' shape we want to stay in the view. */
         self.resetText.position =  CGPoint(x: scene!.camera!.position.x + 310, y: scene!.camera!.position.y + 175)
@@ -478,7 +476,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         self.gameModeSprite.position = self.modeBall.position
 
-*/
     }
     
     private func reset()
@@ -529,6 +526,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             rectangularGrass.scale(to: CGSize(width: grassSize.0, height: grassSize.1))
             rectangularGrass.position = CGPoint(x: posX, y: -186)
             posX += grassSize.0
+            rectangularGrass.name = "grass"
             scene?.addChild(rectangularGrass)
         }
     }
@@ -585,7 +583,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
     }
     
-    /*
+    
     func didBegin(_ contact: SKPhysicsContact)
     {
         let firstBody = contact.bodyA
@@ -602,7 +600,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
         
     }
- */
+ 
     
     private func killSpurdo(spurdoNode: SKNode, spurdoPhysBody: SKPhysicsBody, spurdoPosAtContact: CGPoint)
     {
@@ -714,18 +712,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if physicsStatus
         {
             self.physicsButtonBall.glowWidth = 1
-            for node in entitiesOnMap
+            for node in scene!.children
             {
-                node.physicsBody?.isDynamic = true
+                if (node.name != "pird") && (node.name != "grass")
+                {
+                    node.physicsBody?.isDynamic = true
+                }
             }
         } else {
             self.physicsButtonBall.glowWidth = 0
-            for node in entitiesOnMap
+            for node in scene!.children
             {
+                if (node.name != "pird") && (node.name != "grass")
+                {
                 node.physicsBody?.isDynamic = false
+                }
             }
         }
     }
+
     
 }
 
