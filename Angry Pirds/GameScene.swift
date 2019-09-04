@@ -31,7 +31,57 @@ struct Entity
     var restitution: CGFloat
     var friction: CGFloat
     var angularDamping: CGFloat
+
     
+}
+
+/*
+ scene?.addChild(self.pird)
+ scene?.addChild(self.ball)
+ scene?.addChild(self.entityToSelectIcon)
+ scene?.addChild(self.selectBall)
+ scene?.addChild(self.resetText)
+ scene?.addChild(self.cameraNode)
+ scene?.addChild(self.movingArrowsSprite)
+ scene?.addChild(self.changeCameraFollowPirdBall)
+ scene?.addChild(self.changeCameraFollowPirdSprite)
+ scene?.addChild(self.physicsButtonBall)
+ scene?.addChild(self.physicsButtonSprite)
+ scene?.addChild(self.modeBall)
+ scene?.addChild(self.gameModeSprite)
+ scene?.camera = self.cameraNode
+ */
+
+struct createModeStruct
+{
+    var selectBall: SKShapeNode
+    var entityToSelectIcon: SKSpriteNode
+    var physicsButtonBall: SKShapeNode
+    var physicsButtonSprite: SKSpriteNode
+    
+    var entitiesArr: [SKSpriteNode] = [] // entities offloaded
+}
+
+struct playModeStruct
+{
+    var changeCameraFollowPirdBall: SKShapeNode
+    var changeCameraFollowPirdSprite: SKSpriteNode
+    
+    var entitiesArr: [SKSpriteNode] = []
+    
+    private func countSpurdos()
+        -> Int
+    {
+        var spurdos: Int = 0
+        for entity in entitiesArr
+        {
+            if entity.name == "spurdo"
+            {
+                spurdos += 1
+            }
+        }
+        return spurdos
+    }
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
@@ -44,6 +94,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let changeCameraFollowPirdBallY = 100
     let physicsButtonBallX = -300
     let physicsButtonBallY = 50
+    
+    var spurdos: Int = 0
     
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
@@ -117,6 +169,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var movingArrows = SKTexture(imageNamed: "arrows.png")
     
     let resetText = SKLabelNode(fontNamed: "Courier")
+    
+    var playScene = SKNode()
+    var createScene = SKNode()
     
     override func didMove(to view: SKView) {
         
@@ -221,8 +276,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         
         
-        // prepare different scenes - they will hold different things on screen.
-        
+        // prepare different nodes as scenes - they will hold different things on screen.
         
         self.selectBall.name = "button"
         self.resetText.name = "button"
@@ -231,8 +285,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.physicsButtonBall.name = "button"
         self.modeBall.name = "button"
         
-
+        self.createScene.addChild(self.selectBall)
+        self.createScene.addChild(self.entityToSelectIcon)
+        self.createScene.addChild(self.physicsButtonBall)
+        self.createScene.addChild(self.physicsButtonSprite)
+        
         createSceneContents()
+        
+        /* Objects that are always on screen */
+        scene?.addChild(self.pird)
+        scene?.addChild(self.ball)
+        scene?.addChild(self.cameraNode)
+        scene?.addChild(self.modeBall)
+        scene?.addChild(self.gameModeSprite)
+        scene?.addChild(self.resetText) // debug
+        scene?.camera = self.cameraNode
+        
+        self.createScene.name = "createSceneModeNode" // don't know if redundant - maybe just remove it from parent when changing modes
+        scene?.addChild(self.createScene) // add current mode node.
+        putGrass(scene: scene)
+        self.showCurrentChoice()
+        
+        /*
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.entityToSelectIcon)
@@ -247,9 +321,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.modeBall)
         scene?.addChild(self.gameModeSprite)
         scene?.camera = self.cameraNode
-        putGrass(scene: scene)
-        
-        self.showCurrentChoice()
+        */
+    
 
 
     }
@@ -331,6 +404,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.touchedIcon.toggle()
         }
         
+        
+        
         let nodes = self.nodes(at: pos)
         
         for node in nodes {
@@ -352,17 +427,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && !touchedButton // add bool - touched icon and turn it to true every time the button is pushed
         {
-            self.addNewObject(atPoint: pos)
+            if gameState == .create {  self.addNewObject(atPoint: pos)  }
+            
         } else {
             // drag pird
-            if self.pird.contains(pos)
-            {
-                touchedPird = true
-                touchPoint = pos
-                self.pird.physicsBody?.isDynamic = false
-                
+            if gameState == .create {
+                if self.pird.contains(pos)
+                {
+                    touchedPird = true
+                    touchPoint = pos
+                    self.pird.physicsBody?.isDynamic = false
+
+                }
             }
-        
         }
         
         if self.resetText.contains(pos)
@@ -383,6 +460,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             touchedArrows = true
             
         }
+        
         if self.changeCameraFollowPirdBall.contains(pos)
         {
             changeCameraFollow()
@@ -392,8 +470,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         {
             changePhysicsStatusOfEntities()
         }
+        
+        if modeBall.contains(pos)
+        {
+            changeMode()
+        }
  
-        print(touchedButton)
         touchedButton = false
         
     }
@@ -512,6 +594,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     {
         
         /* It would be better to contain all the bools in one array */
+        
         touchedPird = false
         pirdFlew = false
         touchedArrows = false
@@ -656,10 +739,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         case .create:
             self.gameState = .play
             self.gameModeSprite.texture = self.createIconTexture
-            //
+            // change buttons
         case .play:
             self.gameState = .create
-            //
+            self.gameModeSprite.texture = self.playIconTexture
+            // change buttons
         default:
             self.gameState = .create
         }
@@ -759,7 +843,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
     }
-
+    
     
 }
 
@@ -777,10 +861,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make moving controls in the right lower corner - "joystick" to move screen V
 // Make follow pird button on the left. V
 // Make icons on the left, below choosing entity circle. V
-// If more icons will appear - add their positions to a list and check with any() in order to know, when not to do certain actions when clicked on UI. Right now I'm checking resetting, and not doing so, when tapping on arrows - it will stack up with booleans and actions to check.
-// Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird.
-
-// Make resetting boxes and spurdos optional - buttons.
+// Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird. Done - every button has a name and that name is checked. V
+// Game modes - Create and Play.
 // Fix zPositions of sprites.
 // Spurdos die from falling.
 // Change properties of the bodies - the movement is too fluid.
@@ -790,7 +872,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
 // Make menu.
 
-// 8/17
+// 12/17
 
 // Better ideas:
 
