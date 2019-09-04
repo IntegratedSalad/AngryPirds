@@ -219,6 +219,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
         cameraNode.position = CGPoint(x: 0, y: 0)
         
+        
+        
+        // prepare different scenes - they will hold different things on screen.
+        
+        
+        self.selectBall.name = "button"
+        self.resetText.name = "button"
+        self.movingArrowsSprite.name = "button"
+        self.changeCameraFollowPirdBall.name = "button"
+        self.physicsButtonBall.name = "button"
+        self.modeBall.name = "button"
+        
+
         createSceneContents()
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
@@ -237,8 +250,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         putGrass(scene: scene)
         
         self.showCurrentChoice()
-        
-        print(scene!.children)
+
 
     }
     
@@ -298,7 +310,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     
     var touchedArrows: Bool = false
+    var touchedButton: Bool = false
     func touchDown(atPoint pos : CGPoint) {
+        
+        // check if touch is not in any of buttons positions.
+        
+        // array of positions
+        
+        for button in scene!.children
+        {
+            if button.name == "button" && button.contains(pos)
+            {
+                touchedButton = true
+            }
+            
+        }
+        
         if self.choosedEntityToSelectBall.contains(pos)
         {
             self.touchedIcon.toggle()
@@ -323,7 +350,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && pos.y < 160 && !self.movingArrowsSprite.contains(pos) // add bool - touched icon and turn it to true every time the button is pushed
+        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && !touchedButton // add bool - touched icon and turn it to true every time the button is pushed
         {
             self.addNewObject(atPoint: pos)
         } else {
@@ -366,6 +393,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             changePhysicsStatusOfEntities()
         }
  
+        print(touchedButton)
+        touchedButton = false
+        
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -593,7 +623,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         {
             /* We delete old and make a new node */
             
-            print(secondBody.node!.name!)
 
             killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
             
