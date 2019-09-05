@@ -35,55 +35,6 @@ struct Entity
     
 }
 
-/*
- scene?.addChild(self.pird)
- scene?.addChild(self.ball)
- scene?.addChild(self.entityToSelectIcon)
- scene?.addChild(self.selectBall)
- scene?.addChild(self.resetText)
- scene?.addChild(self.cameraNode)
- scene?.addChild(self.movingArrowsSprite)
- scene?.addChild(self.changeCameraFollowPirdBall)
- scene?.addChild(self.changeCameraFollowPirdSprite)
- scene?.addChild(self.physicsButtonBall)
- scene?.addChild(self.physicsButtonSprite)
- scene?.addChild(self.modeBall)
- scene?.addChild(self.gameModeSprite)
- scene?.camera = self.cameraNode
- */
-
-struct createModeStruct
-{
-    var selectBall: SKShapeNode
-    var entityToSelectIcon: SKSpriteNode
-    var physicsButtonBall: SKShapeNode
-    var physicsButtonSprite: SKSpriteNode
-    
-    var entitiesArr: [SKSpriteNode] = [] // entities offloaded
-}
-
-struct playModeStruct
-{
-    var changeCameraFollowPirdBall: SKShapeNode
-    var changeCameraFollowPirdSprite: SKSpriteNode
-    
-    var entitiesArr: [SKSpriteNode] = []
-    
-    private func countSpurdos()
-        -> Int
-    {
-        var spurdos: Int = 0
-        for entity in entitiesArr
-        {
-            if entity.name == "spurdo"
-            {
-                spurdos += 1
-            }
-        }
-        return spurdos
-    }
-}
-
 class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     let pirdSize = 32
@@ -169,13 +120,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var movingArrows = SKTexture(imageNamed: "arrows.png")
     
     let resetText = SKLabelNode(fontNamed: "Courier")
+    var tempSpriteNodeArr: [SKSpriteNode] = []
     
     var playScene = SKNode()
     var createScene = SKNode()
-    
+
     override func didMove(to view: SKView) {
         
         self.physicsWorld.contactDelegate = self // assigning contact delegate
+        
+        
+        /* INIT */
 
         let texturedPird = SKSpriteNode(texture: self.pirdTexture)
         texturedPird.physicsBody = SKPhysicsBody(texture: self.pirdTexture,
@@ -274,21 +229,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
         cameraNode.position = CGPoint(x: 0, y: 0)
         
-        
-        
-        // prepare different nodes as scenes - they will hold different things on screen.
-        
         self.selectBall.name = "button"
         self.resetText.name = "button"
         self.movingArrowsSprite.name = "button"
         self.changeCameraFollowPirdBall.name = "button"
         self.physicsButtonBall.name = "button"
         self.modeBall.name = "button"
+        /* */
         
+        /* Prepare different nodes as scenes - they will hold different things on screen. */
+        
+        /* Create Mode */
         self.createScene.addChild(self.selectBall)
         self.createScene.addChild(self.entityToSelectIcon)
         self.createScene.addChild(self.physicsButtonBall)
         self.createScene.addChild(self.physicsButtonSprite)
+        /* */
+        
+        
+        /* Play Mode */
+        self.playScene.addChild(self.changeCameraFollowPirdBall)
+        self.playScene.addChild(self.changeCameraFollowPirdSprite)
+        /* */
         
         createSceneContents()
         
@@ -298,13 +260,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.cameraNode)
         scene?.addChild(self.modeBall)
         scene?.addChild(self.gameModeSprite)
+        scene?.addChild(self.movingArrowsSprite)
         scene?.addChild(self.resetText) // debug
         scene?.camera = self.cameraNode
+        putGrass(scene: scene)
+        /* */
         
         self.createScene.name = "createSceneModeNode" // don't know if redundant - maybe just remove it from parent when changing modes
         scene?.addChild(self.createScene) // add current mode node.
-        putGrass(scene: scene)
         self.showCurrentChoice()
+        
         
         /*
         scene?.addChild(self.pird)
@@ -323,7 +288,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.camera = self.cameraNode
         */
     
-
 
     }
     
@@ -364,8 +328,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.friction = currentEntity.friction
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
-        newObject.name = currentEntity.nameOf
+        newObject.name = "entity"
 
+        tempSpriteNodeArr.append(newObject)
         scene?.addChild(newObject)
     }
     
@@ -431,7 +396,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
         } else {
             // drag pird
-            if gameState == .create {
+            if gameState == .play {
                 if self.pird.contains(pos)
                 {
                     touchedPird = true
@@ -595,6 +560,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         /* It would be better to contain all the bools in one array */
         
+        /* Take into account mode of the game. */
+        
+        /* Angry Pirds[3537:1709793] *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Attemped to add a SKNode which already has a parent: <SKSpriteNode> name:'(null)' texture:['nil'] position:{0, 0} scale:{1.00, 1.00} size:{0, 0} anchor:{0.5, 0.5} rotation:0.00' */
+        
+        
+        scene?.removeAllChildren()
+        scene?.addChild(self.pird)
+        scene?.addChild(self.ball)
+        scene?.addChild(self.movingArrowsSprite)
+        scene?.addChild(self.cameraNode)
+        scene?.addChild(self.modeBall)
+        scene?.addChild(self.gameModeSprite)
+        scene?.addChild(self.resetText) // debug
+        scene?.camera = self.cameraNode
+        putGrass(scene: scene!)
+        
+
+        cameraNode.position = CGPoint(x: 0, y: 0)
+        
+        if gameState == .create
+        {
+            self.physicsButtonBall.glowWidth = 1
+            physicsStatus = true
+            self.createScene.name = "createSceneModeNode" // don't know if redundant - maybe just remove it from parent when changing modes
+            scene?.addChild(self.createScene) // add current mode node.
+            self.showCurrentChoice()
+            touchedArrows = false
+        }
+        
+        if gameState == .play
+        {
+            self.changeCameraFollowPirdBall.glowWidth = 1
+            pirdFlew = false
+            touchedPird = false
+            cameraFollows = true
+            self.pird.physicsBody?.isDynamic = false
+            self.pird.position = self.ball.position
+            scene?.addChild(self.playScene)
+        }
+        
+        /*
         touchedPird = false
         pirdFlew = false
         touchedArrows = false
@@ -609,6 +615,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let constraintToBall = SKConstraint.distance(constraintRange, to: self.ball.position)
         
         self.pird.constraints = [ constraintToBall ]
+        */
+        
+        /*
         scene?.addChild(self.pird)
         scene?.addChild(self.ball)
         scene?.addChild(self.resetText)
@@ -624,6 +633,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.addChild(self.gameModeSprite)
         cameraNode.position = CGPoint(x: 0, y: 0)
         putGrass(scene: scene)
+        */
+        
+        
         
     }
     
@@ -734,6 +746,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     private func changeMode()
     {
+        
         switch self.gameState
         {
         case .create:
@@ -747,6 +760,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         default:
             self.gameState = .create
         }
+        initiateState()
     }
     
     private func getCameraMovePos(touchPosX: CGFloat, touchPosY: CGFloat, spritePosX: CGFloat, spritePosY: CGFloat)
@@ -842,6 +856,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 }
             }
         }
+    }
+    
+    private func initiateState()
+    {
+        if gameState == .create
+        {
+            self.playScene.removeFromParent() // deactivate things on screen
+            scene?.addChild(self.createScene)
+        }
+        
+        if gameState == .play
+        {
+            physicsStatus = false // you can't have physics off while playing.
+            changePhysicsStatusOfEntities() // it then toggles to true
+            self.createScene.removeFromParent()
+            scene?.addChild(self.playScene)
+
+        }
+        
     }
     
     
