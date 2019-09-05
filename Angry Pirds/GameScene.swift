@@ -120,7 +120,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var movingArrows = SKTexture(imageNamed: "arrows.png")
     
     let resetText = SKLabelNode(fontNamed: "Courier")
-    var tempSpriteNodeArr: [SKSpriteNode] = []
     
     var playScene = SKNode()
     var createScene = SKNode()
@@ -328,9 +327,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.friction = currentEntity.friction
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
-        newObject.name = "entity"
+        newObject.name = currentEntity.nameOf
 
-        tempSpriteNodeArr.append(newObject)
         scene?.addChild(newObject)
     }
     
@@ -563,7 +561,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         /* Take into account mode of the game. */
         
         /* Angry Pirds[3537:1709793] *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Attemped to add a SKNode which already has a parent: <SKSpriteNode> name:'(null)' texture:['nil'] position:{0, 0} scale:{1.00, 1.00} size:{0, 0} anchor:{0.5, 0.5} rotation:0.00' */
+
+        // offload here
         
+        var tempArr: [SKSpriteNode?] = offloadEntities()
         
         scene?.removeAllChildren()
         scene?.addChild(self.pird)
@@ -597,6 +598,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             cameraFollows = true
             self.pird.physicsBody?.isDynamic = false
             self.pird.position = self.ball.position
+            for node in tempArr
+            {
+                if let entity = node {
+                    
+                    entity.physicsBody!.isDynamic = true
+                    scene?.addChild(entity)
+                }
+                
+            }
+            tempArr.removeAll()
             scene?.addChild(self.playScene)
         }
         
@@ -720,6 +731,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
 
             killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
+        
             
         }
         
@@ -877,7 +889,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
     }
     
-    
+    private func offloadEntities()
+        -> [SKSpriteNode?]
+    {
+        var tempArr: [SKSpriteNode?] = []
+        for node in scene!.children
+        {
+            if node.name == "spurdo" || node.name == "crate" || node.name == "plank" // create an array to hold these.
+            {
+                let spriteNode: SKSpriteNode? = node as? SKSpriteNode // casting
+                print(spriteNode!.name!)
+                tempArr.append(spriteNode) // offload
+            }
+            
+        }
+        
+        return tempArr
+    }
+
 }
 
 
