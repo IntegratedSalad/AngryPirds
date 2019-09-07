@@ -14,6 +14,7 @@ enum GameMode
     case menu
     case play
     case create
+    case won
 }
 
 struct Entity
@@ -87,6 +88,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                friction: 0.6,
                angularDamping: 1),
     ]
+    
+    let namesOfEntities: [String] = ["plank", "crate", "spurdo"]
     
     fileprivate lazy var currentEntity = self.choiceEntities[0]
     
@@ -328,6 +331,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         newObject.physicsBody?.angularDamping = currentEntity.angularDamping
         
         newObject.name = currentEntity.nameOf
+        if newObject.name == "spurdo"
+        {
+            spurdos += 1
+        }
 
         scene?.addChild(newObject)
     }
@@ -550,6 +557,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                                                   y: CGFloat(self.choosedEntityToSelectBallPositionY) + scene!.camera!.position.y)
         
         self.gameModeSprite.position = self.modeBall.position
+        
+        
+        if gameState == .won
+        {
+            scene!.removeAllChildren()
+            let wonText = SKLabelNode(text: "Ebin XD :D")
+            wonText.fontSize = 50
+            wonText.fontColor = SKColor.red
+            wonText.position = CGPoint(x: frame.midX, y: frame.midY)
+            
+            scene!.addChild(wonText)
+            
+            var speen = SKAction.rotate(byAngle: CGFloat(Double.pi * 2), duration: 1)
+            speen =  SKAction.repeatForever(speen)
+            wonText.run(speen)
+            
+        }
 
     }
     
@@ -607,6 +631,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 }
                 
             }
+            let constraintRange = SKRange(upperLimit: CGFloat(ballRadius))
+            let constraintToBall = SKConstraint.distance(constraintRange, to: self.ball.position)
+            
+            self.pird.constraints = [ constraintToBall ] // limit movement of the pird to the ball range
             tempArr.removeAll()
             scene?.addChild(self.playScene)
         }
@@ -731,6 +759,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
 
             killSpurdo(spurdoNode: secondBody.node!, spurdoPhysBody: secondBody, spurdoPosAtContact: secondBody.node!.position)
+            spurdos -= 1
         
             
         }
@@ -876,10 +905,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         {
             self.playScene.removeFromParent() // deactivate things on screen
             scene?.addChild(self.createScene)
+            self.pird.physicsBody?.isDynamic = false
+            self.pird.position = self.ball.position
         }
         
         if gameState == .play
         {
+            
+            if spurdos <= 0
+            {
+                gameState = .won
+            }
+            
             physicsStatus = false // you can't have physics off while playing.
             changePhysicsStatusOfEntities() // it then toggles to true
             self.createScene.removeFromParent()
@@ -895,11 +932,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         var tempArr: [SKSpriteNode?] = []
         for node in scene!.children
         {
-            if node.name == "spurdo" || node.name == "crate" || node.name == "plank" // create an array to hold these.
-            {
-                let spriteNode: SKSpriteNode? = node as? SKSpriteNode // casting
-                print(spriteNode!.name!)
-                tempArr.append(spriteNode) // offload
+            if let nodeName = node.name {
+                if namesOfEntities.contains(nodeName)
+                {
+                    let spriteNode: SKSpriteNode? = node as? SKSpriteNode // casting
+                    print(spriteNode!.name!)
+                    tempArr.append(spriteNode) // offload
+                }
             }
             
         }
@@ -924,7 +963,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make follow pird button on the left. V
 // Make icons on the left, below choosing entity circle. V
 // Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird. Done - every button has a name and that name is checked. V
-// Game modes - Create and Play.
+// Game modes - Create and Play. V
+// Counting spurdos.
+// Better control over added objects - moving them with joystick, rotating them etc.
 // Fix zPositions of sprites.
 // Spurdos die from falling.
 // Change properties of the bodies - the movement is too fluid.
@@ -934,7 +975,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
 // Make menu.
 
-// 12/17
+// 13/18
 
 // Better ideas:
 
