@@ -84,9 +84,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                restitution: 0,
                friction: 0.6,
                angularDamping: 1),
+        Entity(nameOf: "barrel",
+               textureAlive: SKTexture(imageNamed: "fug barrel"),
+               textureDead: SKTexture(imageNamed: "fug barrel"),
+               textureInUse: SKTexture(imageNamed: "fug barrel"),
+               width: 28,
+               height: 40,
+               physicsBodyType: "rectangular",
+               mass: 0.003,
+               restitution: 0,
+               friction: 0.1,
+               angularDamping: 1),
     ]
     
-    let namesOfEntities: [String] = ["plank", "crate", "spurdo"]
+    let namesOfEntities: [String] = ["plank", "crate", "spurdo", "barrel"]
     
     fileprivate lazy var currentEntity = self.choiceEntities[0]
     
@@ -287,16 +298,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let texture = currentEntity.textureInUse
         let newObject = SKSpriteNode(texture: texture)
         
-        if currentEntity.physicsBodyType == "circular"
+        if currentEntity.physicsBodyType == "circular" // add alpha mask for barrels
         {
 
             newObject.physicsBody = SKPhysicsBody(circleOfRadius: max(newObject.size.width / 2, newObject.size.height / 2))
             newObject.physicsBody?.contactTestBitMask = 0b0001
+        
             
-        } else { // be it texture physicsBody type
+        } else if currentEntity.physicsBodyType == "alphaChannel" { // be it alpha channel physicsBody type
             newObject.physicsBody = SKPhysicsBody(texture: texture, size: CGSize(width: newObject.size.width,
                                                                                  height: newObject.size.height))
             newObject.physicsBody?.contactTestBitMask = 0b0001 >> 1
+        } else if currentEntity.physicsBodyType == "rectangular" {
+            
+            newObject.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: newObject.size.width, height: newObject.size.height))
+            
         }
         
         newObject.physicsBody?.isDynamic = false
@@ -380,6 +396,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.ballsOfRotation = nil
             self.rotationBalls = []
             self.shapeOfRotation = nil
+            arrowControls = "view"
             
         }
 
@@ -429,7 +446,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && !touchedButton
+        if !self.pird.contains(pos) && pos.x > -125 && !self.pirdFlew && !touchedButton
         {
             if gameState == .create && addedNewObject
             {
@@ -480,8 +497,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 self.pird.physicsBody?.isDynamic = false
 
             }
-        } else {
-            if !movingArrowsSprite.contains(pos) { reset() }
         }
         
         if movingArrowsSprite.contains(pos)
@@ -639,10 +654,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.showCurrentChoice()
             touchedArrows = false
             addedNewObject = false
-            objectAdded.physicsBody!.isDynamic = true
+            objectAdded.physicsBody?.isDynamic = true
             objectAdded = SKSpriteNode()
             objectAddingDone = true
-            self.ballsOfRotation!.removeFromParent()
+            self.ballsOfRotation?.removeFromParent() // has to be an optional, because sometimes sprite is added and balls removed.
             self.ballsOfRotation = nil
             self.rotationBalls = []
             self.shapeOfRotation = nil
@@ -799,6 +814,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             
         }
         
+        if firstBody.node?.name == "pird" && secondBody.node?.name == "barrel"
+        {
+            makeExplosion(objectExploding: secondBody.node!)
+        }
+        
+        
     }
  
     
@@ -870,7 +891,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             ball.position.y += dirY * 0.3
         }
         
-        
+        shapeOfRotation?.position = CGPoint(x: spritePosX, y: SpritePosY)
         return (spritePosX + (dirX * 0.3), SpritePosY + (dirY * 0.3))
     }
     
@@ -943,12 +964,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         if gameState == .play
         {
             addedNewObject = false
-            objectAdded.physicsBody!.isDynamic = true
+            objectAdded.physicsBody?.isDynamic = true
             objectAddingDone = true
-            self.ballsOfRotation!.removeFromParent()
+            self.ballsOfRotation?.removeFromParent()
             self.ballsOfRotation = nil
             self.rotationBalls = []
             self.shapeOfRotation = nil
+            touchedArrows = false
             objectAdded = SKSpriteNode()
             if spurdos <= 0
             {
@@ -1041,6 +1063,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         obj.zRotation = angle
     }
+    
+    private func makeExplosion(objectExploding: SKNode)
+    {
+        /* One way we can do this - we make a sphere, check what objects are in the radius of said sphere and apply outward force */
+        
+        let radius = 40
+        let pos = objectExploding.position
+        objectExploding.removeFromParent() // delete barrel
+        let explosionBall = SKShapeNode(circleOfRadius: 40)
+        explosionBall.name = "explosionRange" // we know that it exists - it was just created.
+        explosionBall.position = pos
+        explosionBall.glowWidth = CGFloat(radius)
+        explosionBall.strokeColor = .red
+        scene?.addChild(explosionBall)
+        
+        for object in scene!.children
+        {
+            if object.intersects(explosionBall) && object.name != "pird" && object.name != "grass" && object.name != "explosionRange"
+            {
+                let dx = object.position.x - explosionBall.position.x  // in relation to the explosionBall
+                let dy = object.position.y - explosionBall.position.y  // in relation to the explosionBall
+                let dt: CGFloat = 0.04
+                object.physicsBody?.velocity = CGVector(dx: dx / dt, dy: dy / dt)
+            }
+        }
+        
+        let explosionAnimation = SKAction.fadeOut(withDuration: 0.5)
+        
+        // spawn particles
+        explosionBall.run(explosionAnimation, completion: {explosionBall.removeFromParent()})
+      
+    }
 
 }
 
@@ -1060,15 +1114,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird. Done - every button has a name and that name is checked. V
 // Game modes - Create and Play. V
 // Counting spurdos. V
-// Better control over added objects - moving them with joystick, rotating them etc.
-// Make exploding barrels with "FUG" written on them.
+// Better control over added objects - moving them with joystick, rotating them etc. V
+// Make exploding barrels with "FUG" written on them. V
 // Change properties of the bodies - the movement is too fluid.
 // In the lower left bottom there will be a pird to choose.
 // Fix pird flying farther when touch is above him and within circle radius.
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
-// Make menu.
 
-// 13/18
+// 15/20
 
 // Better ideas:
 
@@ -1076,8 +1129,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
  
    Play | Edit mode. While in edit mode - choose between physics on or physics off - button on the left while in create mode
    Drag objects holding them with finger, or using joystick. Rotate them by rotating finger on edge of joystick, or taping once on object -
-   "menu" will apear - sort of like in photoshop - circle of dots.
-   Object will be highlighted by a orange tint.
+   "menu" will apear - sort of like in photoshop - circle of dots. V
  
  */
 
