@@ -7,7 +7,6 @@
 //
 
 import SpriteKit
-import GameplayKit
 
 enum GameMode
 {
@@ -44,8 +43,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let choosedEntityToSelectBallPositionY = 150
     let changeCameraFollowPirdBallX = -300
     let changeCameraFollowPirdBallY = 100
-    let physicsButtonBallX = -300
-    let physicsButtonBallY = 50
     
     var spurdos: Int = 0
     
@@ -108,7 +105,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     var touchPoint: CGPoint = CGPoint()
     var gameState = GameMode.create
     var changeCameraFollowPirdSprite = SKSpriteNode()
-    var physicsButtonSprite = SKSpriteNode()
     var gameModeSprite = SKSpriteNode()
     var movingArrowsSprite = SKSpriteNode()
     
@@ -116,7 +112,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let cameraFollowTexture = SKTexture(imageNamed: "followpird.png")
     let deadSpurdoTexture = SKTexture(imageNamed: "dead spurdo.png")
     let grassTexture = SKTexture(imageNamed: "grass.png")
-    let physicsButtonTexture = SKTexture(imageNamed: "physicsbutton.png")
     let resetPirdButtonTexture = SKTexture(imageNamed: "resetpird.png")
     let playIconTexture = SKTexture(imageNamed: "playicon.png")
     let createIconTexture = SKTexture(imageNamed: "createicon.png")
@@ -179,23 +174,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.changeCameraFollowPirdSprite.scale(to:
             CGSize(width: (self.changeCameraFollowPirdSprite.size.width + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio),
                    height: (self.changeCameraFollowPirdSprite.size.height + CGFloat(10)) * CGFloat(changeCameraFollowPirdSpriteRatio)))
-        
-        
-        self.physicsButtonBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius), x: physicsButtonBallX, y: physicsButtonBallY, color: .white, strokeColor: .orange)
-        
-        self.physicsButtonBall.glowWidth = 1
-        
-        self.physicsButtonSprite = SKSpriteNode(texture: self.physicsButtonTexture)
-        self.physicsButtonSprite.position.x = CGFloat(physicsButtonBallX)
-        self.physicsButtonSprite.position.y = CGFloat(physicsButtonBallY)
-        
-        let physicsButtonSpriteRatio = getRatio(sizeOf: Float(20), width: Float(physicsButtonSprite.size.width),
-                                                height: Float(physicsButtonSprite.size.height))
-        
-        self.physicsButtonSprite.scale(to: CGSize(width: (self.physicsButtonSprite.size.width + CGFloat(10)) * CGFloat(physicsButtonSpriteRatio),
-                                                  height: (self.physicsButtonSprite.size.height + CGFloat(10)) * CGFloat(physicsButtonSpriteRatio)))
-        
-        
+
         self.modeBall = createBall(radiusOf: CGFloat(choosedEntityToSelectBallRadius),
                                    x: Int(self.choosedEntityToSelectBallPositionX) + 602,
                                    y: self.choosedEntityToSelectBallPositionY, color: .white, strokeColor: nil)
@@ -244,8 +223,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         /* Create Mode */
         self.createScene.addChild(self.selectBall)
         self.createScene.addChild(self.entityToSelectIcon)
-        self.createScene.addChild(self.physicsButtonBall)
-        self.createScene.addChild(self.physicsButtonSprite)
         /* */
         
         
@@ -322,7 +299,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             newObject.physicsBody?.contactTestBitMask = 0b0001 >> 1
         }
         
-        if physicsStatus {newObject.physicsBody?.isDynamic = true} else {newObject.physicsBody?.isDynamic = false}
+        newObject.physicsBody?.isDynamic = false
         newObject.position = pos
         newObject.scale(to: CGSize(width: currentEntity.width, height: currentEntity.height))
         newObject.physicsBody?.mass = currentEntity.mass
@@ -336,6 +313,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             spurdos += 1
         }
 
+        arrowControls = "object"
+        objectAdded = newObject
+        addedNewObject = true
         scene?.addChild(newObject)
     }
     
@@ -354,27 +334,81 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     
     var touchedArrows: Bool = false
     var touchedButton: Bool = false
+    var arrowControls: String = "view"
+    var objectAdded: SKSpriteNode = SKSpriteNode()
+    var addedNewObject: Bool = false
+    var rotationBalls: [SKShapeNode] = []
+    var objectAddingDone: Bool = false
     func touchDown(atPoint pos : CGPoint) {
         
         // check if touch is not in any of buttons positions.
         
         // array of positions
         
-        for button in scene!.children
-        {
-            if button.name == "button" && button.contains(pos)
-            {
-                touchedButton = true
-            }
-            
-        }
-        
         if self.choosedEntityToSelectBall.contains(pos)
         {
+            touchedButton = true
             self.touchedIcon.toggle()
         }
         
         
+        if self.changeCameraFollowPirdBall.contains(pos)
+        {
+            touchedButton = true
+            changeCameraFollow()
+        }
+        
+        if modeBall.contains(pos)
+        {
+            touchedButton = true
+            changeMode()
+        }
+        
+        if self.resetText.contains(pos)
+        {
+            touchedButton = true
+            reset()
+        }
+        
+        if objectAdded.contains(pos) // we are done with placing object
+        {
+            addedNewObject = false
+            objectAdded.physicsBody!.isDynamic = true
+            objectAdded = SKSpriteNode()
+            objectAddingDone = true
+            self.ballsOfRotation!.removeFromParent()
+            self.ballsOfRotation = nil
+            self.rotationBalls = []
+            self.shapeOfRotation = nil
+            
+        }
+
+        // for ball in rotation balls
+        
+        if self.movingArrowsSprite.contains(pos)
+        {
+            let fingerX = pos.x
+            let fingerY = pos.y
+            let spriteX = self.movingArrowsSprite.position.x
+            let spriteY = self.movingArrowsSprite.position.y
+            if arrowControls == "view"
+            {
+                let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
+                moveCamera(cameraMovePos: dir)
+            
+            
+            } else
+            {
+                let (dir) = getSpriteMovePos(touchPosX: fingerX, touchPosY: fingerY, arrowsSpritePosX: spriteX, arrowsSpritePosY: spriteY, spritePosX: objectAdded.position.x, SpritePosY: objectAdded.position.y)
+                
+                
+                objectAdded.position = CGPoint(x: dir.0, y: dir.1)
+            }
+            
+            
+            touchedButton = true
+            touchedArrows = true
+        }
         
         let nodes = self.nodes(at: pos)
         
@@ -395,9 +429,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             }
         }
         
-        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && !touchedButton // add bool - touched icon and turn it to true every time the button is pushed
+        if !self.pird.contains(pos) && pos.x > -148 && !self.pirdFlew && !touchedButton
         {
-            if gameState == .create {  self.addNewObject(atPoint: pos)  }
+            if gameState == .create && addedNewObject
+            {
+                
+            }
+            
+            if gameState == .create && !addedNewObject && !objectAddingDone // doesn't make sense but works
+            {
+                self.addNewObject(atPoint: pos)
+                createRotationCircles(obj: objectAdded)
+                
+            }
             
         } else {
             // drag pird
@@ -411,42 +455,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 }
             }
         }
-        
-        if self.resetText.contains(pos)
-        {
-            reset()
-        }
-        
-        if self.movingArrowsSprite.contains(pos)
-        {
-            let fingerX = pos.x
-            let fingerY = pos.y
-            let spriteX = self.movingArrowsSprite.position.x
-            let spriteY = self.movingArrowsSprite.position.y
 
-            let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
-            
-            moveCamera(cameraMovePos: dir)
-            touchedArrows = true
-            
-        }
-        
-        if self.changeCameraFollowPirdBall.contains(pos)
-        {
-            changeCameraFollow()
-        }
-        
-        if self.physicsButtonSprite.contains(pos)
-        {
-            changePhysicsStatusOfEntities()
-        }
-        
-        if modeBall.contains(pos)
-        {
-            changeMode()
-        }
- 
         touchedButton = false
+        objectAddingDone = false
         
     }
     
@@ -475,16 +486,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         if movingArrowsSprite.contains(pos)
         {
+            
             let fingerX = pos.x
             let fingerY = pos.y
             let spriteX = self.movingArrowsSprite.position.x
             let spriteY = self.movingArrowsSprite.position.y
             
-            let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
+            if arrowControls == "view"
+            {
+                let (dir) = getCameraMovePos(touchPosX: fingerX, touchPosY: fingerY, spritePosX: spriteX, spritePosY: spriteY)
+                moveCamera(cameraMovePos: dir)
             
-            moveCamera(cameraMovePos: dir)
-            
+            } else
+            {
+                // constrain to camera view
+                let (dir) = getSpriteMovePos(touchPosX: fingerX, touchPosY: fingerY, arrowsSpritePosX: spriteX, arrowsSpritePosY: spriteY, spritePosX: objectAdded.position.x, SpritePosY: objectAdded.position.y)
+                
+                
+                objectAdded.position = CGPoint(x: dir.0, y: dir.1)
+            }
         }
+        
+        if let shapeOfRotationOfObjectAdded = self.shapeOfRotation
+        {
+            /* Only the peripheries  */
+            if shapeOfRotationOfObjectAdded.contains(pos)
+            {
+                rotateObjectAdded(circle: shapeOfRotationOfObjectAdded, obj: objectAdded, positionOfTouch: pos)
+            }
+        }
+      
         
     }
     
@@ -548,11 +579,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         self.changeCameraFollowPirdSprite.position = CGPoint(x: CGFloat(changeCameraFollowPirdBallX - 1) + scene!.camera!.position.x,
                                                            y: CGFloat(changeCameraFollowPirdBallY - 2) + scene!.camera!.position.y)
         
-        self.physicsButtonBall.position = CGPoint(x: CGFloat(physicsButtonBallX) + scene!.camera!.position.x,
-                                                           y: CGFloat(physicsButtonBallY) + scene!.camera!.position.y)
-        
-        self.physicsButtonSprite.position = self.physicsButtonBall.position
-        
         self.modeBall.position = CGPoint(x: CGFloat(Int(self.choosedEntityToSelectBallPositionX) + 602) + scene!.camera!.position.x,
                                                   y: CGFloat(self.choosedEntityToSelectBallPositionY) + scene!.camera!.position.y)
         
@@ -561,6 +587,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         if gameState == .won
         {
+            
+            // reset camera pos
             scene!.removeAllChildren()
             let wonText = SKLabelNode(text: "Ebin XD :D")
             wonText.fontSize = 50
@@ -601,17 +629,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         scene?.camera = self.cameraNode
         putGrass(scene: scene!)
         
-
         cameraNode.position = CGPoint(x: 0, y: 0)
         
         if gameState == .create
         {
             self.physicsButtonBall.glowWidth = 1
-            physicsStatus = true
             self.createScene.name = "createSceneModeNode" // don't know if redundant - maybe just remove it from parent when changing modes
             scene?.addChild(self.createScene) // add current mode node.
             self.showCurrentChoice()
             touchedArrows = false
+            addedNewObject = false
+            objectAdded.physicsBody!.isDynamic = true
+            objectAdded = SKSpriteNode()
+            objectAddingDone = true
+            self.ballsOfRotation!.removeFromParent()
+            self.ballsOfRotation = nil
+            self.rotationBalls = []
+            self.shapeOfRotation = nil
         }
         
         if gameState == .play
@@ -620,6 +654,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             pirdFlew = false
             touchedPird = false
             cameraFollows = true
+            touchedArrows = false
             self.pird.physicsBody?.isDynamic = false
             self.pird.position = self.ball.position
             for node in tempArr
@@ -778,7 +813,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         deadSpurdoSpriteNode.physicsBody = SKPhysicsBody(circleOfRadius: max(choiceEntities[1].width / 2, choiceEntities[1].height / 2))
         deadSpurdoSpriteNode.physicsBody!.contactTestBitMask = 0b0001 >> 1
         
-        if physicsStatus {deadSpurdoSpriteNode.physicsBody?.isDynamic = true} else {deadSpurdoSpriteNode.physicsBody?.isDynamic = false}
+        deadSpurdoSpriteNode.physicsBody?.isDynamic = true
         
         spurdoNode.removeFromParent()
         scene?.addChild(deadSpurdoSpriteNode)
@@ -814,6 +849,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let dirY: CGFloat = touchPosY - spritePosY
         
         return (scene!.camera!.position.x + (dirX * 1.4), scene!.camera!.position.y + (dirY * 1.4))
+    }
+    
+    private func getSpriteMovePos(touchPosX: CGFloat, touchPosY: CGFloat, arrowsSpritePosX: CGFloat, arrowsSpritePosY: CGFloat,
+                                  spritePosX: CGFloat, SpritePosY: CGFloat)
+        ->
+        (CGFloat, CGFloat)
+    {
+        // constrain it to 0,0 so it doesn't move below or beyond scene far left.
+        
+        let dirX: CGFloat = touchPosX - arrowsSpritePosX
+        let dirY: CGFloat = touchPosY - arrowsSpritePosY
+        
+        
+        /*
+        /* I will throw in moving of ballsOfRotation for the sake of it, but I know that's not a good practice */
+        
+         Actually not necessary
+        for ball in rotationBalls
+        {
+            ball.position.x += dirX * 0.3
+            ball.position.y += dirY * 0.3
+        }
+         
+        */
+        
+        return (spritePosX + (dirX * 0.3), SpritePosY + (dirY * 0.3))
     }
     
     private func moveCamera(cameraMovePos: (CGFloat, CGFloat))
@@ -872,33 +933,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         }
     }
     
-    var physicsStatus: Bool = true
-    private func changePhysicsStatusOfEntities()
-    {
-        physicsStatus.toggle()
-        
-        if physicsStatus
-        {
-            self.physicsButtonBall.glowWidth = 1
-            for node in scene!.children
-            {
-                if (node.name != "pird") && (node.name != "grass")
-                {
-                    node.physicsBody?.isDynamic = true
-                }
-            }
-        } else {
-            self.physicsButtonBall.glowWidth = 0
-            for node in scene!.children
-            {
-                if (node.name != "pird") && (node.name != "grass")
-                {
-                node.physicsBody?.isDynamic = false
-                }
-            }
-        }
-    }
-    
     private func initiateState()
     {
         if gameState == .create
@@ -911,15 +945,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         if gameState == .play
         {
-            
+            addedNewObject = false
+            objectAdded.physicsBody!.isDynamic = true
+            objectAddingDone = true
+            self.ballsOfRotation!.removeFromParent()
+            self.ballsOfRotation = nil
+            self.rotationBalls = []
+            self.shapeOfRotation = nil
+            objectAdded = SKSpriteNode()
             if spurdos <= 0
             {
                 gameState = .won
             }
             
-            physicsStatus = false // you can't have physics off while playing.
-            changePhysicsStatusOfEntities() // it then toggles to true
             self.createScene.removeFromParent()
+            self.pird.position = self.ball.position
             scene?.addChild(self.playScene)
 
         }
@@ -936,7 +976,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 if namesOfEntities.contains(nodeName)
                 {
                     let spriteNode: SKSpriteNode? = node as? SKSpriteNode // casting
-                    print(spriteNode!.name!)
                     tempArr.append(spriteNode) // offload
                 }
             }
@@ -945,9 +984,68 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         return tempArr
     }
+    
+    var ballsOfRotation: SKNode?
+    var shapeOfRotation: SKShapeNode?
+    let radiusOfBallsSurroundingObject: Double = 55
+    private func createRotationCircles(obj: SKSpriteNode)
+    {
+        
+        self.ballsOfRotation = SKNode()
+        
+        self.shapeOfRotation = SKShapeNode(circleOfRadius: CGFloat(radiusOfBallsSurroundingObject + 12.0))
+        self.shapeOfRotation?.position = obj.position
+        
+        for _ in 0...36
+        {
+            let rotationBall = createBall(radiusOf: 2, x: Int(obj.position.x), y: Int(obj.position.y), color: .white, strokeColor: nil)
+            rotationBalls.append(rotationBall)
+            self.ballsOfRotation!.addChild(rotationBall)
+        }
+        if let ballsNode = self.ballsOfRotation
+        {
+            scene!.addChild(ballsNode)
+        }
+        
+        let center = (Double(obj.position.x), Double(obj.position.y))
+        var durationTime: Double = 0.6
+        var angle: Double = 0
+        
+        for ball in rotationBalls
+        {
+            // animate them outwards - every next step will have the ball move faster, for better effect. (and grow faster, make 2 actions)
+            
+            let target = (center.0 + radiusOfBallsSurroundingObject * cos(angle * Double.pi / 180),
+                          center.1 + radiusOfBallsSurroundingObject * sin(angle * Double.pi / 180))
+            
+            let animation = SKAction.move(to: CGPoint(x: target.0, y: target.1), duration: durationTime)
+            durationTime -= 0.01
+            
+            ball.run(animation, completion: {ball.position.x = CGFloat(target.0); ball.position.y = CGFloat(target.1)}) // actually change to positions of balls
+            angle += 10
+    
+            
+        }
+        
+    }
+    
+    private func rotateObjectAdded(circle: SKShapeNode, obj: SKSpriteNode, positionOfTouch: CGPoint)
+    {
+        let pointX: CGFloat = positionOfTouch.x - circle.position.x
+        let pointY: CGFloat = positionOfTouch.y - circle.position.y
+        
+        var angle: CGFloat = 0
+        if pointX.sign == .minus
+        {
+            angle = CGFloat(atan(pointY/pointX)) + CGFloat.pi / 2
+        } else {
+            angle = CGFloat(atan(pointY/pointX)) + CGFloat.pi / 2 + CGFloat.pi
+        }
+        
+        obj.zRotation = angle
+    }
 
 }
-
 
 
 //NEXT:
@@ -964,14 +1062,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // Make icons on the left, below choosing entity circle. V
 // Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird. Done - every button has a name and that name is checked. V
 // Game modes - Create and Play. V
-// Counting spurdos.
+// Counting spurdos. V
 // Better control over added objects - moving them with joystick, rotating them etc.
-// Fix zPositions of sprites.
-// Spurdos die from falling.
+// Make exploding barrels with "FUG" written on them.
 // Change properties of the bodies - the movement is too fluid.
 // In the lower left bottom there will be a pird to choose.
 // Fix pird flying farther when touch is above him and within circle radius.
-// Make exploding barrels with "FUG" written on them.
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
 // Make menu.
 
@@ -985,5 +1081,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
    Drag objects holding them with finger, or using joystick. Rotate them by rotating finger on edge of joystick, or taping once on object -
    "menu" will apear - sort of like in photoshop - circle of dots.
    Object will be highlighted by a orange tint.
+ 
+ */
+
+
+/*
+ 
+    We could add the possibility of tapping a previously added object and modifying it after being added.
+ 
+ */
+
+/*
+ 
+    We will keep the little dots of rotation to a simply aesthetic function - for actual rotation, we will create another invisible shape
  
  */

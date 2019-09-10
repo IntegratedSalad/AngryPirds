@@ -23,8 +23,6 @@
 		D8B8C36C22B576E000AD7053 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C36A22B576E000AD7053 /* LaunchScreen.storyboard */; };
 		D8B8C37722B576E000AD7053 /* Angry_PirdsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B8C37622B576E000AD7053 /* Angry_PirdsTests.swift */; };
 		D8B8C38222B576E000AD7053 /* Angry_PirdsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B8C38122B576E000AD7053 /* Angry_PirdsUITests.swift */; };
-		D8B8C39022B6324F00AD7053 /* pird.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C38F22B6324F00AD7053 /* pird.png */; };
-		D8B8C3D622B7005900AD7053 /* plank.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D522B7005900AD7053 /* plank.png */; };
 		D8B8C3D822B8F0CB00AD7053 /* grass.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D722B8F0CB00AD7053 /* grass.png */; };
 		D8B8C3DA22B971ED00AD7053 /* dead spurdo.png in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C3D922B971ED00AD7053 /* dead spurdo.png */; };
 /* End PBXBuildFile section */
@@ -69,8 +67,6 @@
 		D8B8C37D22B576E000AD7053 /* Angry PirdsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Angry PirdsUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8B8C38122B576E000AD7053 /* Angry_PirdsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Angry_PirdsUITests.swift; sourceTree = "<group>"; };
 		D8B8C38322B576E000AD7053 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D8B8C38F22B6324F00AD7053 /* pird.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = pird.png; path = ../../../../Desktop/pird.png; sourceTree = "<group>"; };
-		D8B8C3D522B7005900AD7053 /* plank.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = plank.png; path = ../../../../Desktop/plank.png; sourceTree = "<group>"; };
 		D8B8C3D722B8F0CB00AD7053 /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		D8B8C3D922B971ED00AD7053 /* dead spurdo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dead spurdo.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -126,7 +122,6 @@
 				D837C558231AC8DF00BF64D5 /* physicsbutton.png */,
 				D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */,
 				D837C54E231496BC00BF64D5 /* arrows.png */,
-				D8B8C3D522B7005900AD7053 /* plank.png */,
 				D837C55A231AE3A300BF64D5 /* playicon.png */,
 				D8B8C35D22B576DE00AD7053 /* GameScene.sks */,
 				D8B8C35F22B576DE00AD7053 /* Actions.sks */,
@@ -134,7 +129,6 @@
 				D8B8C36122B576DE00AD7053 /* GameScene.swift */,
 				D8B8C3D922B971ED00AD7053 /* dead spurdo.png */,
 				D8B8C36322B576DE00AD7053 /* GameViewController.swift */,
-				D8B8C38F22B6324F00AD7053 /* pird.png */,
 				D837C550231838F500BF64D5 /* followpird.png */,
 				D8B8C36522B576DE00AD7053 /* Main.storyboard */,
 				D837C5522318413D00BF64D5 /* createicon.png */,
@@ -276,8 +270,6 @@
 				D8B8C3DA22B971ED00AD7053 /* dead spurdo.png in Resources */,
 				D8B8C3D822B8F0CB00AD7053 /* grass.png in Resources */,
 				D8B8C35E22B576DE00AD7053 /* GameScene.sks in Resources */,
-				D8B8C39022B6324F00AD7053 /* pird.png in Resources */,
-				D8B8C3D622B7005900AD7053 /* plank.png in Resources */,
 				D8B8C36922B576E000AD7053 /* Assets.xcassets in Resources */,
 				D837C559231AC8DF00BF64D5 /* physicsbutton.png in Resources */,
 				D8B8C36C22B576E000AD7053 /* LaunchScreen.storyboard in Resources */,
