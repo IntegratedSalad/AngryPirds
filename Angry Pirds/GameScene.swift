@@ -862,17 +862,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         let dirY: CGFloat = touchPosY - arrowsSpritePosY
         
         
-        /*
         /* I will throw in moving of ballsOfRotation for the sake of it, but I know that's not a good practice */
         
-         Actually not necessary
         for ball in rotationBalls
         {
             ball.position.x += dirX * 0.3
             ball.position.y += dirY * 0.3
         }
-         
-        */
+        
         
         return (spritePosX + (dirX * 0.3), SpritePosY + (dirY * 0.3))
     }
