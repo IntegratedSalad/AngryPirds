@@ -990,7 +990,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         self.ballsOfRotation = SKNode()
         
-        self.shapeOfRotation = SKShapeNode(circleOfRadius: CGFloat(radiusOfBallsSurroundingObject + 12.0))
+        self.shapeOfRotation = SKShapeNode(circleOfRadius: CGFloat(radiusOfBallsSurroundingObject + 46.0))
         self.shapeOfRotation?.position = obj.position
         
         for _ in 0...36
