@@ -44,7 +44,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
     let changeCameraFollowPirdBallX = -300
     let changeCameraFollowPirdBallY = 100
     
-    var spurdos: Int = 0
+    public var spurdos: Int = 0
     
     let choosedEntityToSelectBallRadius = 15
     let cameraNode = SKCameraNode()
@@ -599,25 +599,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         
         self.gameModeSprite.position = self.modeBall.position
         
-        
-        if gameState == .won
+        if spurdos <= 0 && pirdFlew
         {
+            gameState = .won
+            scene!.removeFromParent()
+            let endScene = EndScene(fileNamed: "EndScene")!
+            endScene.scaleMode = .aspectFill
+            let transition = SKTransition.crossFade(withDuration: 1)
             
-            // reset camera pos
-            scene!.removeAllChildren()
-            let wonText = SKLabelNode(text: "Ebin XD :D")
-            wonText.fontSize = 50
-            wonText.fontColor = SKColor.red
-            wonText.position = CGPoint(x: frame.midX, y: frame.midY)
+            scene?.view?.presentScene(endScene, transition: transition)
             
-            scene!.addChild(wonText)
-            
-            var speen = SKAction.rotate(byAngle: CGFloat(Double.pi * 2), duration: 1)
-            speen =  SKAction.repeatForever(speen)
-            wonText.run(speen)
             
         }
-
+        
     }
     
     private func reset()
@@ -661,6 +655,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.ballsOfRotation = nil
             self.rotationBalls = []
             self.shapeOfRotation = nil
+            spurdos = 0
         }
         
         if gameState == .play
@@ -972,11 +967,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
             self.shapeOfRotation = nil
             touchedArrows = false
             objectAdded = SKSpriteNode()
-            if spurdos <= 0
-            {
-                gameState = .won
-            }
-            
             self.createScene.removeFromParent()
             self.pird.position = self.ball.position
             scene?.addChild(self.playScene)
@@ -1064,17 +1054,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
         obj.zRotation = angle
     }
     
+    let explosionRadius: CGFloat = 40
     private func makeExplosion(objectExploding: SKNode)
     {
         /* One way we can do this - we make a sphere, check what objects are in the radius of said sphere and apply outward force */
         
-        let radius = 40
         let pos = objectExploding.position
         objectExploding.removeFromParent() // delete barrel
-        let explosionBall = SKShapeNode(circleOfRadius: 40)
+        let explosionBall = SKShapeNode(circleOfRadius: self.explosionRadius)
         explosionBall.name = "explosionRange" // we know that it exists - it was just created.
         explosionBall.position = pos
-        explosionBall.glowWidth = CGFloat(radius)
+        explosionBall.glowWidth = CGFloat(self.explosionRadius)
         explosionBall.strokeColor = .red
         scene?.addChild(explosionBall)
         
@@ -1087,11 +1077,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
                 let dt: CGFloat = 0.04
                 object.physicsBody?.velocity = CGVector(dx: dx / dt, dy: dy / dt)
             }
+            
+            if object.intersects(explosionBall) && object.name == "barrel"
+            {
+                makeExplosion(objectExploding: object)
+            }
         }
         
         let explosionAnimation = SKAction.fadeOut(withDuration: 0.5)
         
-        // spawn particles
         explosionBall.run(explosionAnimation, completion: {explosionBall.removeFromParent()})
       
     }
@@ -1120,8 +1114,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 // In the lower left bottom there will be a pird to choose.
 // Fix pird flying farther when touch is above him and within circle radius.
 // Make different types of pirds - exploding ones, the ones that divide into three mid-air and heavier ones.
+// Proper End Game: 0 spurdos - win.
 
-// 15/20
+// 16/20
 
 // Better ideas:
 

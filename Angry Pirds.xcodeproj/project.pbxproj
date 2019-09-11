@@ -16,6 +16,8 @@
 		D8A74E67232816EF009CBAAF /* fug barrel.png in Resources */ = {isa = PBXBuildFile; fileRef = D8A74E66232816EF009CBAAF /* fug barrel.png */; };
 		D8A74E69232816F7009CBAAF /* barrel particle 1.png in Resources */ = {isa = PBXBuildFile; fileRef = D8A74E68232816F7009CBAAF /* barrel particle 1.png */; };
 		D8A74E6B232816FF009CBAAF /* barrel particle 2.png in Resources */ = {isa = PBXBuildFile; fileRef = D8A74E6A232816FF009CBAAF /* barrel particle 2.png */; };
+		D8A74E6F23292A37009CBAAF /* EndScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A74E6E23292A37009CBAAF /* EndScene.swift */; };
+		D8A74E7123292A79009CBAAF /* EndScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = D8A74E7023292A79009CBAAF /* EndScene.sks */; };
 		D8B8C35C22B576DE00AD7053 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */; };
 		D8B8C35E22B576DE00AD7053 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C35D22B576DE00AD7053 /* GameScene.sks */; };
 		D8B8C36022B576DE00AD7053 /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = D8B8C35F22B576DE00AD7053 /* Actions.sks */; };
@@ -57,6 +59,8 @@
 		D8A74E66232816EF009CBAAF /* fug barrel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fug barrel.png"; sourceTree = "<group>"; };
 		D8A74E68232816F7009CBAAF /* barrel particle 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "barrel particle 1.png"; sourceTree = "<group>"; };
 		D8A74E6A232816FF009CBAAF /* barrel particle 2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "barrel particle 2.png"; sourceTree = "<group>"; };
+		D8A74E6E23292A37009CBAAF /* EndScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndScene.swift; sourceTree = "<group>"; };
+		D8A74E7023292A79009CBAAF /* EndScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = EndScene.sks; sourceTree = "<group>"; };
 		D8B8C35822B576DE00AD7053 /* Angry Pirds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Angry Pirds.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8B8C35B22B576DE00AD7053 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D8B8C35D22B576DE00AD7053 /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -133,6 +137,8 @@
 				D8B8C35F22B576DE00AD7053 /* Actions.sks */,
 				D837C556231AC76C00BF64D5 /* resetpird.png */,
 				D8B8C36122B576DE00AD7053 /* GameScene.swift */,
+				D8A74E7023292A79009CBAAF /* EndScene.sks */,
+				D8A74E6E23292A37009CBAAF /* EndScene.swift */,
 				D8B8C3D922B971ED00AD7053 /* dead spurdo.png */,
 				D8B8C36322B576DE00AD7053 /* GameViewController.swift */,
 				D8A74E6A232816FF009CBAAF /* barrel particle 2.png */,
@@ -284,6 +290,7 @@
 				D8B8C36922B576E000AD7053 /* Assets.xcassets in Resources */,
 				D837C559231AC8DF00BF64D5 /* physicsbutton.png in Resources */,
 				D8B8C36C22B576E000AD7053 /* LaunchScreen.storyboard in Resources */,
+				D8A74E7123292A79009CBAAF /* EndScene.sks in Resources */,
 				D837C5532318413D00BF64D5 /* createicon.png in Resources */,
 				D8B8C36022B576DE00AD7053 /* Actions.sks in Resources */,
 				D8A74E67232816EF009CBAAF /* fug barrel.png in Resources */,
@@ -313,6 +320,7 @@
 			files = (
 				D8B8C36222B576DE00AD7053 /* GameScene.swift in Sources */,
 				D8B8C36422B576DE00AD7053 /* GameViewController.swift in Sources */,
+				D8A74E6F23292A37009CBAAF /* EndScene.swift in Sources */,
 				D8B8C35C22B576DE00AD7053 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
