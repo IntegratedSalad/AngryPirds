@@ -1094,22 +1094,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate { // protocols
 
 
 //NEXT:
-// Collisions V
-// Restrain pird to circle V
-// Make movable screen if the pird goes beyond right edge. V
-// Make camera that follows pird V
-// Make spurdos - menu from left to choose box or spurdo to spawn V <- later it will be used to choose different pirds.
-// Change the physcics shape of spurdo's body V
-// Make spurdos killable - must learn about SKPhysicsContactDelegate and how to assign it. V
-// Add planks V
-// Make moving controls in the right lower corner - "joystick" to move screen V
-// Make follow pird button on the left. V
-// Make icons on the left, below choosing entity circle. V
-// Furthermore, fix adding objects. Do not place any, only if player touched button or touched anything interactive or touched screen too close to the pird. Done - every button has a name and that name is checked. V
-// Game modes - Create and Play. V
-// Counting spurdos. V
-// Better control over added objects - moving them with joystick, rotating them etc. V
-// Make exploding barrels with "FUG" written on them. V
 // Change properties of the bodies - the movement is too fluid.
 // In the lower left bottom there will be a pird to choose.
 // Fix pird flying farther when touch is above him and within circle radius.
